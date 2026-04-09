@@ -1,0 +1,58 @@
+{
+  "backend": "trt",
+  "model_path": "runs/paper_runtime_formal/r0p375_fp16.engine",
+  "model_format": "state_dict",
+  "metrics": {
+    "per_class": {
+      "0": {
+        "dice": 0.9909300485561634,
+        "iou": 0.9820416747838602,
+        "hd": null,
+        "asd": null
+      },
+      "1": {
+        "dice": 0.9301386662469856,
+        "iou": 0.8761915210206276,
+        "hd": null,
+        "asd": null
+      },
+      "2": {
+        "dice": 0.8960095147291819,
+        "iou": 0.8203432083814993,
+        "hd": null,
+        "asd": null
+      },
+      "3": {
+        "dice": 0.7869248537068394,
+        "iou": 0.7361811736769889,
+        "hd": null,
+        "asd": null
+      },
+      "4": {
+        "dice": 0.8717280453306505,
+        "iou": 0.7784359278692596,
+        "hd": null,
+        "asd": null
+      }
+    },
+    "average": {
+      "dice": 0.8951462257139642,
+      "iou": 0.8386387011464471,
+      "hd": null,
+      "asd": null
+    },
+    "meta": {
+      "empty_pair_policy": "count_as_one",
+      "heavy": false,
+      "hd_percentile": 95.0,
+      "classes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "ignore_label": 6
+    }
+  }
+}

@@ -1,0 +1,187 @@
+\documentclass[12pt,oneside]{report}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{fontspec}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage{amsmath,amssymb}
+\usepackage[hyphens,spaces,obeyspaces]{url}
+\usepackage{grffile}
+\usepackage{etoolbox}
+\usepackage{microtype}
+\usepackage{adjustbox}
+\usepackage[table]{xcolor}
+\usepackage{colortbl}
+\usepackage{tikz}
+
+% ══════════════════════════════════════════════════════════════════════════
+%  COLOUR PALETTE
+% ══════════════════════════════════════════════════════════════════════════
+\definecolor{nusblue}{HTML}{003D7C}
+\definecolor{nuslight}{HTML}{E8EEF4}
+\definecolor{ruleblue}{HTML}{4A7FB5}
+
+% ══════════════════════════════════════════════════════════════════════════
+%  FONTS
+% ══════════════════════════════════════════════════════════════════════════
+\setmainfont{TeX Gyre Termes}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{TeX Gyre Cursor}[Scale=0.88]
+
+% ══════════════════════════════════════════════════════════════════════════
+%  PARAGRAPH & SPACING
+% ══════════════════════════════════════════════════════════════════════════
+\onehalfspacing
+\setlength{\parindent}{1.5em}
+\setlength{\parskip}{0.15em}
+\setlength{\emergencystretch}{2em}
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{3}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% ══════════════════════════════════════════════════════════════════════════
+%  CAPTIONS
+% ══════════════════════════════════════════════════════════════════════════
+\captionsetup[figure]{labelfont={bf,sf,color=nusblue},textfont=small,
+  labelsep=period,justification=justified,singlelinecheck=false}
+\captionsetup[table]{labelfont={bf,sf,color=nusblue},textfont=small,
+  labelsep=period,justification=justified,singlelinecheck=false,position=top}
+
+% ══════════════════════════════════════════════════════════════════════════
+%  CHAPTER HEADING
+% ══════════════════════════════════════════════════════════════════════════
+\titleformat{\chapter}[display]
+  {\normalfont\sffamily}
+  {\textcolor{nusblue}{\large\scshape Chapter \thechapter}}
+  {2pt}
+  {\Large\bfseries}
+  [\vspace{-4pt}{\color{ruleblue}\titlerule[0.6pt]}\vspace{2pt}]
+\titlespacing*{\chapter}{0pt}{-20pt}{10pt}
+
+\titleformat{name=\chapter,numberless}[display]
+  {\normalfont\sffamily}
+  {}
+  {0pt}
+  {\Large\bfseries}
+  [\vspace{-4pt}{\color{ruleblue}\titlerule[0.6pt]}\vspace{2pt}]
+\titlespacing*{name=\chapter,numberless}{0pt}{-20pt}{10pt}
+
+% ── Section ──────────────────────────────────────────────────────────────
+\titleformat{\section}
+  {\normalfont\sffamily\large\bfseries}
+  {\textcolor{nusblue}{\thesection}}{0.6em}{}
+\titlespacing*{\section}{0pt}{16pt}{6pt}
+
+% ── Subsection ───────────────────────────────────────────────────────────
+\titleformat{\subsection}
+  {\normalfont\sffamily\normalsize\bfseries}
+  {\textcolor{nusblue}{\thesubsection}}{0.5em}{}
+\titlespacing*{\subsection}{0pt}{11pt}{4pt}
+
+% ── Subsubsection ────────────────────────────────────────────────────────
+\titleformat{\subsubsection}
+  {\normalfont\sffamily\normalsize\itshape}
+  {\thesubsubsection}{0.5em}{}
+\titlespacing*{\subsubsection}{0pt}{8pt}{3pt}
+
+% ══════════════════════════════════════════════════════════════════════════
+%  HEADER / FOOTER
+% ══════════════════════════════════════════════════════════════════════════
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{%
+  \color{ruleblue}\leaders\hrule height \headrulewidth\hfill}}
+\fancyhead[R]{\small\sffamily\itshape\nouppercase{\leftmark}}
+\fancyfoot[R]{\small\sffamily\thepage}
+\setlength{\headheight}{15pt}
+
+\renewcommand{\chaptermark}[1]{%
+  \markboth{\thechapter.\ #1}{}}
+
+% ══════════════════════════════════════════════════════════════════════════
+%  HYPERLINKS
+% ══════════════════════════════════════════════════════════════════════════
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=nusblue,
+  citecolor=nusblue,
+  urlcolor=ruleblue,
+}
+
+\begin{document}
+
+% ══════════════════════════════════════════════════════════════════════════
+%  TITLE PAGE
+% ══════════════════════════════════════════════════════════════════════════
+\begin{titlepage}
+\centering
+\vspace*{0.8cm}
+
+{\sffamily\large\textsc{National University of Singapore}\par}
+\vspace{2pt}
+{\sffamily\normalsize College of Design and Engineering\par}
+\vspace{1pt}
+{\sffamily\small Department of Electrical and Computer Engineering\par}
+
+\vspace{6pt}
+{\color{ruleblue}\rule{0.5\textwidth}{0.6pt}\par}
+
+\vfill
+
+{\sffamily\LARGE\bfseries\textcolor{nusblue}{%
+  Resource-Efficient Deep Learning\\[4pt]
+  via Model Compression and Pruning}\par}
+
+\vspace{10pt}
+{\sffamily\large\itshape\textcolor{black!70}{%
+  Defect-Aware Acceleration for a 3D\\Semiconductor Inspection Pipeline}\par}
+
+\vfill
+
+{\Large\bfseries Wang Yisong\par}
+\vspace{4pt}
+{\normalsize B.Eng.\ Computer Engineering\par}
+
+\vspace{1.5cm}
+
+{\color{ruleblue}\rule{0.4\textwidth}{0.4pt}\par}
+\vspace{10pt}
+{\small\sffamily
+\begin{tabular}{r@{\hspace{0.6em}}l}
+\textbf{Main Supervisor:} & Assoc Prof Bharadwaj Veeravalli \\
+                           & \textcolor{black!55}{\texttt{elebv@nus.edu.sg}} \\[5pt]
+\textbf{Co-Supervisor:}   & Dr Xu Xun, I2R, A*STAR \\
+                           & \textcolor{black!55}{\texttt{Xu\_Xun@i2r.a-star.edu.sg}} \\
+\end{tabular}\par}
+
+\vfill
+{\sffamily\large April 2026\par}
+\vspace{0.8cm}
+\end{titlepage}
+
+% ══════════════════════════════════════════════════════════════════════════
+%  FRONT MATTER
+% ══════════════════════════════════════════════════════════════════════════
+\pagenumbering{roman}
+\chapter*{Acknowledgements}
+\input{acknowledgements.tex}
+\chapter*{Abstract}
+\input{abstract.tex}
+\tableofcontents
+\clearpage
+\listoffigures
+\clearpage
+\listoftables
+\clearpage
+\pagenumbering{arabic}
+\input{body.tex}
+
+\end{document}

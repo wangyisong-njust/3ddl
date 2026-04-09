@@ -1,0 +1,16 @@
+{
+  "bf16_w0.1": {
+    "best_finetune_dice": 0.5576835196232424,
+    "recovery": 0.24130625998135657,
+    "total_train_time_sec": 11.259705066680908,
+    "amp": true,
+    "amp_dtype": "bf16"
+  },
+  "fp32_w0.1": {
+    "best_finetune_dice": 0.5571225864681765,
+    "recovery": 0.24074532682629068,
+    "total_train_time_sec": 6.939168214797974,
+    "amp": false,
+    "amp_dtype": null
+  }
+}

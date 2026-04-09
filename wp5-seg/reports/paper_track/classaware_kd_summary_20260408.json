@@ -1,0 +1,90 @@
+{
+  "uniform": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_classaware_kd_uniform",
+    "kd_class_weights": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "best_finetune_dice": 0.6892324112309143,
+    "recovery": 0.3728551515890285,
+    "best_epoch": 5,
+    "best_per_class_dice": {
+      "0": 0.9817948281764984,
+      "1": 0.8844404280185699,
+      "2": 0.8152842402458191,
+      "3": 0.11735246998723596,
+      "4": 0.6472900897264481
+    },
+    "total_train_time_sec": 11.263521671295166,
+    "wall_clock_sec": 18.653319835662842
+  },
+  "c34_2_2": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_classaware_kd_c34_2_2",
+    "kd_class_weights": [
+      1.0,
+      1.0,
+      1.0,
+      2.0,
+      2.0
+    ],
+    "best_finetune_dice": 0.7242472860217094,
+    "recovery": 0.4078700263798236,
+    "best_epoch": 5,
+    "best_per_class_dice": {
+      "0": 0.980099493265152,
+      "1": 0.8803567051887512,
+      "2": 0.8410229384899139,
+      "3": 0.23121835440397262,
+      "4": 0.6885389387607574
+    },
+    "total_train_time_sec": 11.7777259349823,
+    "wall_clock_sec": 18.94442081451416
+  },
+  "c34_2_4": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_classaware_kd_c34_2_4",
+    "kd_class_weights": [
+      1.0,
+      1.0,
+      1.0,
+      2.0,
+      4.0
+    ],
+    "best_finetune_dice": 0.6949465963244439,
+    "recovery": 0.3785693366825581,
+    "best_epoch": 5,
+    "best_per_class_dice": {
+      "0": 0.9786210596561432,
+      "1": 0.8430768609046936,
+      "2": 0.8042181253433227,
+      "3": 0.17670382410287858,
+      "4": 0.672113111615181
+    },
+    "total_train_time_sec": 11.300617933273315,
+    "wall_clock_sec": 18.999709844589233
+  },
+  "c34_4_2": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_classaware_kd_c34_4_2",
+    "kd_class_weights": [
+      1.0,
+      1.0,
+      1.0,
+      4.0,
+      2.0
+    ],
+    "best_finetune_dice": 0.731594398021698,
+    "recovery": 0.4152171383798122,
+    "best_epoch": 5,
+    "best_per_class_dice": {
+      "0": 0.9801650583744049,
+      "1": 0.8856495082378387,
+      "2": 0.848404324054718,
+      "3": 0.27093951404094696,
+      "4": 0.6728135854005813
+    },
+    "total_train_time_sec": 11.41382360458374,
+    "wall_clock_sec": 18.748755931854248
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "task_id": "/home/kaixin/yisong/3ddl/wp5-seg/3ddl-dataset/data/images/SN21_I33_image.nii",
+  "created_at": 1774753592.3663247,
+  "total_elapsed": 2.319196939468384,
+  "phases": [
+    {
+      "name": "Folder Creation",
+      "start_time": 1774753592.3663328,
+      "end_time": 1774753592.366616,
+      "elapsed_seconds": 0.00028324127197265625,
+      "count": null,
+      "avg_seconds_per_item": null
+    },
+    {
+      "name": "NII to JPG Conversion",
+      "start_time": 1774753592.3678095,
+      "end_time": 1774753592.384076,
+      "elapsed_seconds": 0.016266584396362305,
+      "count": 83,
+      "avg_seconds_per_item": 0.0001959829445344856
+    },
+    {
+      "name": "2D Detection Inference",
+      "start_time": 1774753592.3841076,
+      "end_time": 1774753594.3375676,
+      "elapsed_seconds": 1.9534599781036377,
+      "count": 83,
+      "avg_seconds_per_item": 0.023535662386790817
+    },
+    {
+      "name": "3D Bounding Box Generation",
+      "start_time": 1774753594.3376048,
+      "end_time": 1774753594.3503606,
+      "elapsed_seconds": 0.012755870819091797,
+      "count": 83,
+      "avg_seconds_per_item": 0.00015368519059146744
+    },
+    {
+      "name": "3D Segmentation",
+      "start_time": 1774753594.3504424,
+      "end_time": 1774753594.4718294,
+      "elapsed_seconds": 0.12138700485229492,
+      "count": 0,
+      "avg_seconds_per_item": null
+    },
+    {
+      "name": "Metrology",
+      "start_time": 1774753594.471858,
+      "end_time": 1774753594.5387979,
+      "elapsed_seconds": 0.0669398307800293,
+      "count": 0,
+      "avg_seconds_per_item": null
+    },
+    {
+      "name": "GLTF Generation",
+      "start_time": 1774753594.5388231,
+      "end_time": 1774753594.540564,
+      "elapsed_seconds": 0.0017409324645996094,
+      "count": 0,
+      "avg_seconds_per_item": null
+    },
+    {
+      "name": "Report Generation",
+      "start_time": 1774753594.5405867,
+      "end_time": 1774753594.6869502,
+      "elapsed_seconds": 0.1463634967803955,
+      "count": null,
+      "avg_seconds_per_item": null
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "fullcase": {
+    "best_epoch": 7,
+    "best_avg_dice": 0.8895277527739006,
+    "best_per_class": {
+      "0": 0.9907328113057148,
+      "1": 0.9337954099836021,
+      "2": 0.8936674529793619,
+      "3": 0.7545048112381549,
+      "4": 0.8749382783626688
+    },
+    "last_epoch": 10,
+    "last_avg_dice": 0.8883142954295222,
+    "last_per_class": {
+      "0": 0.9905948012039579,
+      "1": 0.9358845565510893,
+      "2": 0.8944765281403202,
+      "3": 0.7463380377418523,
+      "4": 0.8742775535103918
+    }
+  },
+  "SN002": {
+    "SN002_SN002_student_r0p5": {
+      "reference": "/home/kaixin/yisong/3ddl/intelliscan/output_student_deploy/SN002_SN002_teacher_ref",
+      "candidate": "/home/kaixin/yisong/3ddl/intelliscan/output_student_deploy/SN002_SN002_student_r0p5",
+      "voxel_agreement": 0.99695092097591,
+      "class_dice": {
+        "0": 0.999618187110446,
+        "1": 0.6650787065951249,
+        "2": 0.6037576199306928,
+        "3": 0.062215071064628584,
+        "4": 0.1283507771935859
+      },
+      "metrology": {
+        "count": 95,
+        "pad_flip_count": 2,
+        "pad_flip_rate": 0.021052631578947368,
+        "solder_flip_count": 65,
+        "solder_flip_rate": 0.6842105263157895,
+        "blt_max_abs_delta": 21.700000000000003,
+        "blt_mean_abs_delta": 2.7115789473684213,
+        "pad_misalignment_max_abs_delta": 12.77,
+        "pad_misalignment_mean_abs_delta": 4.544526315789473
+      }
+    },
+    "SN002_SN002_student_r0p5_last": {
+      "reference": "/home/kaixin/yisong/3ddl/intelliscan/output_student_deploy/SN002_SN002_teacher_ref",
+      "candidate": "/home/kaixin/yisong/3ddl/intelliscan/output_student_deploy/SN002_SN002_student_r0p5_last",
+      "voxel_agreement": 0.9971452325574915,
+      "class_dice": {
+        "0": 0.9996226588026211,
+        "1": 0.6453658638721849,
+        "2": 0.6558130301654554,
+        "3": 0.475973487986744,
+        "4": 0.14162399414776883
+      },
+      "metrology": {
+        "count": 95,
+        "pad_flip_count": 1,
+        "pad_flip_rate": 0.010526315789473684,
+        "solder_flip_count": 35,
+        "solder_flip_rate": 0.3684210526315789,
+        "blt_max_abs_delta": 14.699999999999996,
+        "blt_mean_abs_delta": 3.8168421052631576,
+        "pad_misalignment_max_abs_delta": 13.25,
+        "pad_misalignment_mean_abs_delta": 3.1824210526315793
+      }
+    }
+  },
+  "SN009": {
+    "SN009_SN009_student_r0p5": {
+      "reference": "/home/kaixin/yisong/3ddl/intelliscan/output_student_deploy/SN009_SN009_teacher_ref",
+      "candidate": "/home/kaixin/yisong/3ddl/intelliscan/output_student_deploy/SN009_SN009_student_r0p5",
+      "voxel_agreement": 0.9882937589648895,
+      "class_dice": {
+        "0": 0.9978037546274412,
+        "1": 0.8348019488096107,
+        "2": 0.7496724075284982,
+        "3": 0.06302666682607108,
+        "4": 0.5570292929439191
+      },
+      "metrology": {
+        "count": 114,
+        "pad_flip_count": 63,
+        "pad_flip_rate": 0.5526315789473685,
+        "solder_flip_count": 22,
+        "solder_flip_rate": 0.19298245614035087,
+        "blt_max_abs_delta": 7.700000000000003,
+        "blt_mean_abs_delta": 2.026315789473683,
+        "pad_misalignment_max_abs_delta": 15.54,
+        "pad_misalignment_mean_abs_delta": 4.0399122807017545
+      }
+    },
+    "SN009_SN009_student_r0p5_last": {
+      "reference": "/home/kaixin/yisong/3ddl/intelliscan/output_student_deploy/SN009_SN009_teacher_ref",
+      "candidate": "/home/kaixin/yisong/3ddl/intelliscan/output_student_deploy/SN009_SN009_student_r0p5_last",
+      "voxel_agreement": 0.9890904932870053,
+      "class_dice": {
+        "0": 0.9979022873794696,
+        "1": 0.8621232535582606,
+        "2": 0.749744369757758,
+        "3": 0.005068364495741552,
+        "4": 0.5310494917475325
+      },
+      "metrology": {
+        "count": 114,
+        "pad_flip_count": 55,
+        "pad_flip_rate": 0.4824561403508772,
+        "solder_flip_count": 13,
+        "solder_flip_rate": 0.11403508771929824,
+        "blt_max_abs_delta": 7.0,
+        "blt_mean_abs_delta": 1.0499999999999998,
+        "pad_misalignment_max_abs_delta": 19.5,
+        "pad_misalignment_mean_abs_delta": 3.825614035087719
+      }
+    }
+  }
+}

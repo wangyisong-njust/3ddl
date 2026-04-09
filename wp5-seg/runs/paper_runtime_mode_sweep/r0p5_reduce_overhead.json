@@ -1,0 +1,57 @@
+{
+  "model_1": {
+    "path": "runs/paper_fulltrain_kd_c34_2_2_e10_b2/best.ckpt",
+    "features": [
+      16,
+      16,
+      32,
+      64,
+      128,
+      16
+    ],
+    "fp32": {
+      "precision": "FP32",
+      "compile_mode": null,
+      "first_run_ms": 172.6174633949995,
+      "mean_ms": 7.163942139595747,
+      "std_ms": 1.3409915694689494,
+      "min_ms": 6.234990432858467,
+      "max_ms": 10.135086253285408,
+      "median_ms": 6.2598129734396935,
+      "throughput_fps": 139.5879503929702,
+      "power": {
+        "sample_count": 1,
+        "avg_power_w": 79.5199966430664,
+        "max_power_w": 79.5199966430664,
+        "avg_utilization_pct": 4.0,
+        "wall_time_s": 0.14528042823076248,
+        "energy_j": 11.552699165213483,
+        "idle_power_w": 87.78666666666666,
+        "dynamic_energy_j": 0.0,
+        "joules_per_iteration": 0.5776349582606741
+      }
+    },
+    "compile_reduce-overhead_fp32": {
+      "precision": "compile:reduce-overhead+FP32",
+      "compile_mode": "reduce-overhead",
+      "first_run_ms": 4339.6599646657705,
+      "mean_ms": 4.758884105831385,
+      "std_ms": 0.11155536798181862,
+      "min_ms": 4.612855613231659,
+      "max_ms": 5.149584263563156,
+      "median_ms": 4.753774031996727,
+      "throughput_fps": 210.13329548719875,
+      "power": {
+        "sample_count": 1,
+        "avg_power_w": 75.12999725341797,
+        "max_power_w": 75.12999725341797,
+        "avg_utilization_pct": 0.0,
+        "wall_time_s": 0.09748869203031063,
+        "energy_j": 7.324325164476548,
+        "idle_power_w": 87.79333333333332,
+        "dynamic_energy_j": 0.0,
+        "joules_per_iteration": 0.3662162582238274
+      }
+    }
+  }
+}

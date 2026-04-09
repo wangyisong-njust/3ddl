@@ -1,0 +1,113 @@
+{
+  "model_1": {
+    "path": "../intelliscan/models/segmentation_model.ckpt",
+    "features": [
+      32,
+      32,
+      64,
+      128,
+      256,
+      32
+    ],
+    "fp32": {
+      "precision": "FP32",
+      "compile_mode": null,
+      "first_run_ms": 180.94455264508724,
+      "mean_ms": 17.401992017403245,
+      "std_ms": 0.027391783919926815,
+      "min_ms": 17.358846962451935,
+      "max_ms": 17.505258321762085,
+      "median_ms": 17.398579977452755,
+      "throughput_fps": 57.46468559461055,
+      "power": {
+        "sample_count": 7,
+        "avg_power_w": 144.45999145507812,
+        "max_power_w": 201.66000366210938,
+        "avg_utilization_pct": 65.71428680419922,
+        "wall_time_s": 0.6984829604625702,
+        "energy_j": 100.90284249994056,
+        "idle_power_w": 104.37266666666666,
+        "dynamic_energy_j": 28.000313295234214,
+        "joules_per_iteration": 2.522571062498514
+      }
+    },
+    "compile_reduce-overhead_fp32": {
+      "precision": "compile:reduce-overhead+FP32",
+      "compile_mode": "reduce-overhead",
+      "first_run_ms": 3052.0110242068768,
+      "mean_ms": 13.355643674731255,
+      "std_ms": 0.04219277592627291,
+      "min_ms": 13.28243687748909,
+      "max_ms": 13.505570590496063,
+      "median_ms": 13.344978913664818,
+      "throughput_fps": 74.87471396769817,
+      "power": {
+        "sample_count": 5,
+        "avg_power_w": 115.11199951171875,
+        "max_power_w": 156.1999969482422,
+        "avg_utilization_pct": 48.0,
+        "wall_time_s": 0.5366719830781221,
+        "energy_j": 61.77738505404193,
+        "idle_power_w": 97.09466666666665,
+        "dynamic_energy_j": 9.669397747732692,
+        "joules_per_iteration": 1.5444346263510482
+      }
+    }
+  },
+  "model_2": {
+    "path": "runs/paper_fulltrain_kd_c34_2_2_e10_b2/best.ckpt",
+    "features": [
+      16,
+      16,
+      32,
+      64,
+      128,
+      16
+    ],
+    "fp32": {
+      "precision": "FP32",
+      "compile_mode": null,
+      "first_run_ms": 15.430131927132607,
+      "mean_ms": 6.939482502639294,
+      "std_ms": 1.459974603177635,
+      "min_ms": 6.241887807846069,
+      "max_ms": 10.70852018892765,
+      "median_ms": 6.267810240387917,
+      "throughput_fps": 144.10296439535225,
+      "power": {
+        "sample_count": 3,
+        "avg_power_w": 93.23333740234375,
+        "max_power_w": 111.11000061035156,
+        "avg_utilization_pct": 26.0,
+        "wall_time_s": 0.2804048713296652,
+        "energy_j": 26.14308197793946,
+        "idle_power_w": 151.9176923076923,
+        "dynamic_energy_j": 0.0,
+        "joules_per_iteration": 0.6535770494484865
+      }
+    },
+    "compile_reduce-overhead_fp32": {
+      "precision": "compile:reduce-overhead+FP32",
+      "compile_mode": "reduce-overhead",
+      "first_run_ms": 1681.5133225172758,
+      "mean_ms": 4.796485742554069,
+      "std_ms": 0.1476888051809556,
+      "min_ms": 4.579655826091766,
+      "max_ms": 5.373768508434296,
+      "median_ms": 4.791242070496082,
+      "throughput_fps": 208.48597362191106,
+      "power": {
+        "sample_count": 2,
+        "avg_power_w": 85.56999969482422,
+        "max_power_w": 96.5999984741211,
+        "avg_utilization_pct": 14.0,
+        "wall_time_s": 0.1944306269288063,
+        "energy_j": 16.637428686962437,
+        "idle_power_w": 87.17066666666668,
+        "dynamic_energy_j": 0.0,
+        "joules_per_iteration": 0.4159357171740609
+      }
+    }
+  },
+  "speedup_fp32": 2.5076786360920638
+}

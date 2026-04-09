@@ -1,0 +1,14 @@
+{
+  "teacher_average_dice": 0.7812997927516699,
+  "student_average_dice": 0.7315902125835418,
+  "average_gap": -0.0497095801681281,
+  "per_class_gap": {
+    "0": -0.008188670873641946,
+    "1": -0.018314343690872148,
+    "2": -0.05436283349990845,
+    "3": 0.006479208543896664,
+    "4": -0.1741612613201141
+  },
+  "teacher_summary_path": "runs/paper_recovery_eval_teacher/metrics/summary.json",
+  "student_summary_path": "runs/paper_recovery_eval_student_c34_4_2/metrics/summary.json"
+}

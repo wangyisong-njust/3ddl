@@ -1,0 +1,53 @@
+{
+  "per_class": {
+    "0": {
+      "dice": 0.9909189891541141,
+      "iou": 0.9820214503112881,
+      "hd": null,
+      "asd": null
+    },
+    "1": {
+      "dice": 0.932502050509398,
+      "iou": 0.8761548077923128,
+      "hd": null,
+      "asd": null
+    },
+    "2": {
+      "dice": 0.8859595019241859,
+      "iou": 0.8033454217787447,
+      "hd": null,
+      "asd": null
+    },
+    "3": {
+      "dice": 0.712245455718246,
+      "iou": 0.658765261853649,
+      "hd": null,
+      "asd": null
+    },
+    "4": {
+      "dice": 0.8706647387181206,
+      "iou": 0.774788253780069,
+      "hd": null,
+      "asd": null
+    }
+  },
+  "average": {
+    "dice": 0.878458147204813,
+    "iou": 0.8190150391032127,
+    "hd": null,
+    "asd": null
+  },
+  "meta": {
+    "empty_pair_policy": "count_as_one",
+    "heavy": false,
+    "hd_percentile": 95.0,
+    "classes": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "ignore_label": 6
+  }
+}

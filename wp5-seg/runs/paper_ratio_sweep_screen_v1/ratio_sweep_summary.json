@@ -1,0 +1,90 @@
+[
+  {
+    "pruning_ratio": 0.25,
+    "pruned_model_path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/pruned_r0p25.ckpt",
+    "pruning_info_path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/pruned_r0p25.json",
+    "benchmark_path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/benchmark_r0p25.json",
+    "original_params": 5749509,
+    "pruned_params": 3235205,
+    "reduction_pct": 43.73,
+    "pruned_features": [
+      24,
+      24,
+      48,
+      96,
+      192,
+      24
+    ],
+    "fp32_mean_ms": 19.925466645509005,
+    "fp32_speedup_vs_teacher": 0.8718874415267567,
+    "amp_mean_ms": 25.214987387880683,
+    "amp_mean_ms_teacher": 33.69202301837504,
+    "amp_speedup_vs_teacher": 1.3361903577460743
+  },
+  {
+    "pruning_ratio": 0.375,
+    "pruned_model_path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/pruned_r0p375.ckpt",
+    "pruning_info_path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/pruned_r0p375.json",
+    "benchmark_path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/benchmark_r0p375.json",
+    "original_params": 5749509,
+    "pruned_params": 2247285,
+    "reduction_pct": 60.91,
+    "pruned_features": [
+      20,
+      20,
+      40,
+      80,
+      160,
+      20
+    ],
+    "fp32_mean_ms": 15.281232306733727,
+    "fp32_speedup_vs_teacher": 1.1369118142622043,
+    "amp_mean_ms": 21.065959753468633,
+    "amp_mean_ms_teacher": 33.69594835676253,
+    "amp_speedup_vs_teacher": 1.5995448938050068
+  },
+  {
+    "pruning_ratio": 0.5,
+    "pruned_model_path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/pruned_r0p5.ckpt",
+    "pruning_info_path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/pruned_r0p5.json",
+    "benchmark_path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/benchmark_r0p5.json",
+    "original_params": 5749509,
+    "pruned_params": 1438853,
+    "reduction_pct": 74.97,
+    "pruned_features": [
+      16,
+      16,
+      32,
+      64,
+      128,
+      16
+    ],
+    "fp32_mean_ms": 6.385471858084202,
+    "fp32_speedup_vs_teacher": 2.719722862091514,
+    "amp_mean_ms": 17.129953484982252,
+    "amp_mean_ms_teacher": 33.694828394800425,
+    "amp_speedup_vs_teacher": 1.9670122527968636
+  },
+  {
+    "pruning_ratio": 0.625,
+    "pruned_model_path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/pruned_r0p625.ckpt",
+    "pruning_info_path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/pruned_r0p625.json",
+    "benchmark_path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/benchmark_r0p625.json",
+    "original_params": 5749509,
+    "pruned_params": 809909,
+    "reduction_pct": 85.91,
+    "pruned_features": [
+      12,
+      12,
+      24,
+      48,
+      96,
+      12
+    ],
+    "fp32_mean_ms": 5.004004994407296,
+    "fp32_speedup_vs_teacher": 3.469663998078395,
+    "amp_mean_ms": 13.766023283824325,
+    "amp_mean_ms_teacher": 33.6918686516583,
+    "amp_speedup_vs_teacher": 2.447465615668957
+  }
+]

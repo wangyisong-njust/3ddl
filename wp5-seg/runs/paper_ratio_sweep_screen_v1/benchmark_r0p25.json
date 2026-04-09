@@ -1,0 +1,45 @@
+{
+  "model_1": {
+    "path": "/home/kaixin/yisong/3ddl/intelliscan/models/segmentation_model.ckpt",
+    "fp32": {
+      "precision": "FP32",
+      "mean_ms": 17.372764134779572,
+      "std_ms": 0.015030278484521273,
+      "min_ms": 17.342230305075645,
+      "max_ms": 17.40303821861744,
+      "median_ms": 17.37313624471426,
+      "throughput_fps": 57.561363997226
+    },
+    "amp": {
+      "precision": "AMP",
+      "mean_ms": 33.69202301837504,
+      "std_ms": 0.030070239895905584,
+      "min_ms": 33.63140858709812,
+      "max_ms": 33.80583971738815,
+      "median_ms": 33.6918281391263,
+      "throughput_fps": 29.68061607504594
+    }
+  },
+  "model_2": {
+    "path": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_ratio_sweep_screen_v1/pruned_r0p25.ckpt",
+    "fp32": {
+      "precision": "FP32",
+      "mean_ms": 19.925466645509005,
+      "std_ms": 0.7275151834942694,
+      "min_ms": 17.83742569386959,
+      "max_ms": 21.237365901470184,
+      "median_ms": 19.9910756200552,
+      "throughput_fps": 50.18703038633174
+    },
+    "amp": {
+      "precision": "AMP",
+      "mean_ms": 25.214987387880683,
+      "std_ms": 0.020303384436059602,
+      "min_ms": 25.14636516571045,
+      "max_ms": 25.261353701353073,
+      "median_ms": 25.216609239578247,
+      "throughput_fps": 39.658953011439515
+    }
+  },
+  "speedup_fp32": 0.8718874415267567
+}

@@ -1,0 +1,782 @@
+{
+  "date": "2026-04-09",
+  "gpu": "physical GPU 1 via CUDA_VISIBLE_DEVICES=1",
+  "compile_mode_selection": {
+    "candidate_results": {
+      "reduce_overhead": {
+        "mean_ms": 4.758884105831385,
+        "first_run_ms": 4339.6599646657705
+      },
+      "max_autotune_no_cudagraphs": {
+        "mean_ms": 5.957260448485613,
+        "first_run_ms": 41273.070227354765
+      }
+    },
+    "decision": "retain reduce-overhead",
+    "reason": "lower steady-state latency and far lower compile warmup cost than max-autotune-no-cudagraphs"
+  },
+  "compile_formal": {
+    "teacher_vs_r0p375": {
+      "teacher_fp32_ms": 17.39856847561896,
+      "teacher_compile_ms": 13.367013726383448,
+      "teacher_compile_power_w": 119.9020004272461,
+      "r0p375_fp32_ms": 14.822916081175208,
+      "r0p375_compile_ms": 13.786588562652469,
+      "r0p375_compile_power_w": 147.94833374023438,
+      "decision": "compile helps teacher meaningfully, but r0.375 compile is only a marginal gain and is still slightly slower than compiled teacher"
+    },
+    "teacher_vs_r0p5": {
+      "teacher_fp32_ms": 17.401992017403245,
+      "teacher_compile_ms": 13.355643674731255,
+      "teacher_compile_power_w": 115.11199951171875,
+      "r0p5_fp32_ms": 6.939482502639294,
+      "r0p5_compile_ms": 4.796485742554069,
+      "r0p5_compile_power_w": 85.56999969482422,
+      "decision": "retain compile as the best PyTorch fallback backend for r0.5"
+    }
+  },
+  "backend_benchmarks": {
+    "r0p375": {
+      "pytorch_fp32": {
+        "compile_mode": null,
+        "first_run_ms": 177.2258374840021,
+        "mean_ms": 16.468214336782694,
+        "std_ms": 0.24808170463968002,
+        "min_ms": 15.787865966558456,
+        "median_ms": 16.48137718439102,
+        "p95_ms": 16.85932483524084,
+        "p99_ms": 16.91269401460886,
+        "fps": 60.72303769853439,
+        "power": {
+          "sample_count": 13,
+          "avg_power_w": 198.54539489746094,
+          "max_power_w": 304.489990234375,
+          "avg_utilization_pct": 82.61538696289062,
+          "wall_time_s": 1.3183535784482956,
+          "energy_j": 261.7530318474976,
+          "idle_power_w": 118.27600000000002,
+          "dynamic_energy_j": 105.82344400294696,
+          "joules_per_iteration": 3.2719128980937198
+        }
+      },
+      "pytorch_compile_fp32": {
+        "compile_mode": "reduce-overhead",
+        "first_run_ms": 4318.247303366661,
+        "mean_ms": 14.308128179982305,
+        "std_ms": 0.9537337107341647,
+        "min_ms": 10.877048596739769,
+        "median_ms": 14.334945008158684,
+        "p95_ms": 15.641706995666027,
+        "p99_ms": 15.916099548339842,
+        "fps": 69.89034396540028,
+        "power": {
+          "sample_count": 11,
+          "avg_power_w": 176.947265625,
+          "max_power_w": 275.45001220703125,
+          "avg_utilization_pct": 77.7272720336914,
+          "wall_time_s": 1.1456872560083866,
+          "energy_j": 202.72622721209336,
+          "idle_power_w": 112.29533333333333,
+          "dynamic_energy_j": 74.07089490287959,
+          "joules_per_iteration": 2.534077840151167
+        }
+      },
+      "trt_fp16": {
+        "first_run_ms": 13.32784816622734,
+        "mean_ms": 3.1533921137452126,
+        "std_ms": 0.10258963072762177,
+        "min_ms": 2.9701441526412964,
+        "median_ms": 3.198184072971344,
+        "p95_ms": 3.2836003229022026,
+        "p99_ms": 3.2842963188886642,
+        "fps": 317.1188244053552,
+        "power": {
+          "sample_count": 3,
+          "avg_power_w": 96.6066665649414,
+          "max_power_w": 117.58999633789062,
+          "avg_utilization_pct": 26.66666603088379,
+          "wall_time_s": 0.27174175903201103,
+          "energy_j": 26.252065506576145,
+          "idle_power_w": 149.542,
+          "dynamic_energy_j": 0.0,
+          "joules_per_iteration": 0.3281508188322018
+        }
+      },
+      "trt_int8_real": {
+        "first_run_ms": 6.4856261014938354,
+        "mean_ms": 2.790923835709691,
+        "std_ms": 0.042489585099071,
+        "min_ms": 2.708829939365387,
+        "median_ms": 2.8133001178503036,
+        "p95_ms": 2.830272540450096,
+        "p99_ms": 2.8374294005334377,
+        "fps": 358.3042959485545,
+        "power": {
+          "sample_count": 2,
+          "avg_power_w": 108.30999755859375,
+          "max_power_w": 118.43000030517578,
+          "avg_utilization_pct": 36.0,
+          "wall_time_s": 0.24151857197284698,
+          "energy_j": 26.158875940734106,
+          "idle_power_w": 115.22214285714283,
+          "dynamic_energy_j": 0.0,
+          "joules_per_iteration": 0.32698594925917635
+        }
+      },
+      "trt_int8_fitonly64": {
+        "first_run_ms": 19.579747691750526,
+        "mean_ms": 2.7873074635863304,
+        "std_ms": 0.043039878333115664,
+        "min_ms": 2.7024075388908386,
+        "median_ms": 2.8017163276672363,
+        "p95_ms": 2.837406098842621,
+        "p99_ms": 2.842186391353607,
+        "fps": 358.7691752933977,
+        "power": {
+          "sample_count": 2,
+          "avg_power_w": 106.93000030517578,
+          "max_power_w": 117.36000061035156,
+          "avg_utilization_pct": 21.0,
+          "wall_time_s": 0.24199513159692287,
+          "energy_j": 25.876539495510016,
+          "idle_power_w": 144.68933333333334,
+          "dynamic_energy_j": 0.0,
+          "joules_per_iteration": 0.3234567436938752
+        }
+      }
+    },
+    "r0p5": {
+      "pytorch_fp32": {
+        "compile_mode": null,
+        "first_run_ms": 170.86132429540157,
+        "mean_ms": 8.868635236285627,
+        "std_ms": 0.014223305342087773,
+        "min_ms": 8.83387215435505,
+        "median_ms": 8.87072179466486,
+        "p95_ms": 8.888464607298374,
+        "p99_ms": 8.897734582424164,
+        "fps": 112.75692069378887,
+        "power": {
+          "sample_count": 7,
+          "avg_power_w": 121.16142272949219,
+          "max_power_w": 164.5399932861328,
+          "avg_utilization_pct": 70.28571319580078,
+          "wall_time_s": 0.71025475487113,
+          "energy_j": 86.05547660057283,
+          "idle_power_w": 90.14999999999999,
+          "dynamic_energy_j": 22.026010448940468,
+          "joules_per_iteration": 1.0756934575071604
+        }
+      },
+      "pytorch_compile_fp32": {
+        "compile_mode": "reduce-overhead",
+        "first_run_ms": 3066.832344979048,
+        "mean_ms": 4.8600258538499475,
+        "std_ms": 0.11611244898382976,
+        "min_ms": 4.527300596237183,
+        "median_ms": 4.90726251155138,
+        "p95_ms": 4.96312715113163,
+        "p99_ms": 5.014186277985572,
+        "fps": 205.76022228520327,
+        "power": {
+          "sample_count": 4,
+          "avg_power_w": 110.52000427246094,
+          "max_power_w": 141.44000244140625,
+          "avg_utilization_pct": 50.0,
+          "wall_time_s": 0.38988265208899975,
+          "energy_j": 43.08983237463465,
+          "idle_power_w": 92.21933333333331,
+          "dynamic_energy_j": 7.135114120755165,
+          "joules_per_iteration": 0.5386229046829332
+        }
+      },
+      "trt_fp16": {
+        "first_run_ms": 15.057221055030823,
+        "mean_ms": 1.6205270076170564,
+        "std_ms": 0.018704953924255054,
+        "min_ms": 1.5972908586263657,
+        "median_ms": 1.614479348063469,
+        "p95_ms": 1.6428133472800255,
+        "p99_ms": 1.6798814758658407,
+        "fps": 617.0832052163539,
+        "power": {
+          "sample_count": 2,
+          "avg_power_w": 85.74500274658203,
+          "max_power_w": 96.12000274658203,
+          "avg_utilization_pct": 0.0,
+          "wall_time_s": 0.148505425080657,
+          "energy_j": 12.733598081423267,
+          "idle_power_w": 110.08066666666667,
+          "dynamic_energy_j": 0.0,
+          "joules_per_iteration": 0.15916997601779084
+        }
+      },
+      "trt_int8_random": {
+        "first_run_ms": 2.112980931997299,
+        "mean_ms": 1.6252217581495643,
+        "std_ms": 0.014398604516725899,
+        "min_ms": 1.5985127538442612,
+        "median_ms": 1.6268547624349594,
+        "p95_ms": 1.6449298709630966,
+        "p99_ms": 1.6496916115283966,
+        "fps": 615.3006474258468,
+        "power": {
+          "sample_count": 2,
+          "avg_power_w": 101.80000305175781,
+          "max_power_w": 111.61000061035156,
+          "avg_utilization_pct": 13.0,
+          "wall_time_s": 0.14930482394993305,
+          "energy_j": 15.199231533745348,
+          "idle_power_w": 95.98733333333334,
+          "dynamic_energy_j": 0.8678596289884729,
+          "joules_per_iteration": 0.18999039417181685
+        }
+      },
+      "trt_int8_real": {
+        "first_run_ms": 2.055220305919647,
+        "mean_ms": 1.6259659081697464,
+        "std_ms": 0.013593290939520134,
+        "min_ms": 1.6014203429222107,
+        "median_ms": 1.6294149681925774,
+        "p95_ms": 1.645425520837307,
+        "p99_ms": 1.6474459506571293,
+        "fps": 615.0190449722534,
+        "power": {
+          "sample_count": 1,
+          "avg_power_w": 89.63999938964844,
+          "max_power_w": 89.63999938964844,
+          "avg_utilization_pct": 0.0,
+          "wall_time_s": 0.14906497113406658,
+          "energy_j": 13.36218392147569,
+          "idle_power_w": 96.33066666666667,
+          "dynamic_energy_j": 0.0,
+          "joules_per_iteration": 0.16702729901844612
+        }
+      }
+    }
+  },
+  "calibration": {
+    "r0p5_real": {
+      "source_split": "train",
+      "requested_samples": 64,
+      "selected_samples": 64,
+      "exact_shape_count": 0,
+      "adapted_count": 64,
+      "cropped_sample_count": 26,
+      "padded_sample_count": 63,
+      "cropped_voxels_total": 982,
+      "padded_voxels_total": 3518
+    },
+    "r0p375_real": {
+      "source_split": "train",
+      "requested_samples": 64,
+      "selected_samples": 64,
+      "exact_shape_count": 0,
+      "adapted_count": 64,
+      "cropped_sample_count": 26,
+      "padded_sample_count": 63,
+      "cropped_voxels_total": 982,
+      "padded_voxels_total": 3518
+    },
+    "r0p375_fitonly64": {
+      "source_split": "train",
+      "fit_only": true,
+      "requested_samples": 64,
+      "selected_samples": 64,
+      "exact_shape_count": 0,
+      "adapted_count": 64,
+      "cropped_sample_count": 0,
+      "padded_sample_count": 64,
+      "cropped_voxels_total": 0,
+      "padded_voxels_total": 5523
+    },
+    "decision": "fit-only calibration improves r0.375 INT8 quality relative to generic real calibration, but FP16 remains the preferred backend"
+  },
+  "quality_eval": {
+    "invalid_runtime_caveat": {
+      "artifact": "runs/paper_runtime_formal/eval_r0p5_trt_fp16/metrics/summary.json",
+      "average_dice": 0.2918382810450148,
+      "decision": "do not use GPU-direct TRT predictor eval for quality claims; use host-relay path only"
+    },
+    "r0p5": {
+      "pytorch": {
+        "backend": "pytorch",
+        "model_path": "runs/paper_fulltrain_kd_c34_2_2_e10_b2/best.ckpt",
+        "model_format": "pruned",
+        "metrics": {
+          "per_class": {
+            "0": {
+              "dice": 0.990732749303182,
+              "iou": 0.9816565660909674,
+              "hd": null,
+              "asd": null
+            },
+            "1": {
+              "dice": 0.9337943675874294,
+              "iou": 0.8780983905682619,
+              "hd": null,
+              "asd": null
+            },
+            "2": {
+              "dice": 0.8936664633367254,
+              "iou": 0.8148330326738029,
+              "hd": null,
+              "asd": null
+            },
+            "3": {
+              "dice": 0.7545048112381549,
+              "iou": 0.7064914930874118,
+              "hd": null,
+              "asd": null
+            },
+            "4": {
+              "dice": 0.8749368314085335,
+              "iou": 0.7817231504053905,
+              "hd": null,
+              "asd": null
+            }
+          },
+          "average": {
+            "dice": 0.889527044574805,
+            "iou": 0.8325605265651669,
+            "hd": null,
+            "asd": null
+          },
+          "meta": {
+            "empty_pair_policy": "count_as_one",
+            "heavy": false,
+            "hd_percentile": 95.0,
+            "classes": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "ignore_label": 6
+          }
+        }
+      },
+      "trt_fp16_hostrelay": {
+        "backend": "trt",
+        "model_path": "runs/paper_runtime_formal/r0p5_fp16.engine",
+        "model_format": "state_dict",
+        "metrics": {
+          "per_class": {
+            "0": {
+              "dice": 0.990732724639191,
+              "iou": 0.9816565164204302,
+              "hd": null,
+              "asd": null
+            },
+            "1": {
+              "dice": 0.9337995593575226,
+              "iou": 0.8781063289477907,
+              "hd": null,
+              "asd": null
+            },
+            "2": {
+              "dice": 0.8936764149145148,
+              "iou": 0.8148497021061251,
+              "hd": null,
+              "asd": null
+            },
+            "3": {
+              "dice": 0.754498479786147,
+              "iou": 0.7064785362708371,
+              "hd": null,
+              "asd": null
+            },
+            "4": {
+              "dice": 0.8749575447077038,
+              "iou": 0.7817548412358624,
+              "hd": null,
+              "asd": null
+            }
+          },
+          "average": {
+            "dice": 0.8895329446810158,
+            "iou": 0.8325691849962091,
+            "hd": null,
+            "asd": null
+          },
+          "meta": {
+            "empty_pair_policy": "count_as_one",
+            "heavy": false,
+            "hd_percentile": 95.0,
+            "classes": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "ignore_label": 6
+          }
+        }
+      },
+      "trt_int8_random_hostrelay": {
+        "backend": "trt",
+        "model_path": "runs/paper_runtime_formal/r0p5_int8_random.engine",
+        "model_format": "state_dict",
+        "metrics": {
+          "per_class": {
+            "0": {
+              "dice": 0.9907327842438358,
+              "iou": 0.9816566363148306,
+              "hd": null,
+              "asd": null
+            },
+            "1": {
+              "dice": 0.9338000992248798,
+              "iou": 0.8781076604607462,
+              "hd": null,
+              "asd": null
+            },
+            "2": {
+              "dice": 0.8936747524930143,
+              "iou": 0.8148476740067032,
+              "hd": null,
+              "asd": null
+            },
+            "3": {
+              "dice": 0.7544813448209958,
+              "iou": 0.7064561951482647,
+              "hd": null,
+              "asd": null
+            },
+            "4": {
+              "dice": 0.874955058954228,
+              "iou": 0.7817504441943662,
+              "hd": null,
+              "asd": null
+            }
+          },
+          "average": {
+            "dice": 0.8895288079473908,
+            "iou": 0.8325637220249822,
+            "hd": null,
+            "asd": null
+          },
+          "meta": {
+            "empty_pair_policy": "count_as_one",
+            "heavy": false,
+            "hd_percentile": 95.0,
+            "classes": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "ignore_label": 6
+          }
+        }
+      },
+      "trt_int8_real_hostrelay": {
+        "backend": "trt",
+        "model_path": "runs/paper_runtime_formal/r0p5_int8_real.engine",
+        "model_format": "state_dict",
+        "metrics": {
+          "per_class": {
+            "0": {
+              "dice": 0.9907327842438358,
+              "iou": 0.9816566363148306,
+              "hd": null,
+              "asd": null
+            },
+            "1": {
+              "dice": 0.9338000992248798,
+              "iou": 0.8781076604607462,
+              "hd": null,
+              "asd": null
+            },
+            "2": {
+              "dice": 0.8936747524930143,
+              "iou": 0.8148476740067032,
+              "hd": null,
+              "asd": null
+            },
+            "3": {
+              "dice": 0.7544813448209958,
+              "iou": 0.7064561951482647,
+              "hd": null,
+              "asd": null
+            },
+            "4": {
+              "dice": 0.874955058954228,
+              "iou": 0.7817504441943662,
+              "hd": null,
+              "asd": null
+            }
+          },
+          "average": {
+            "dice": 0.8895288079473908,
+            "iou": 0.8325637220249822,
+            "hd": null,
+            "asd": null
+          },
+          "meta": {
+            "empty_pair_policy": "count_as_one",
+            "heavy": false,
+            "hd_percentile": 95.0,
+            "classes": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "ignore_label": 6
+          }
+        }
+      }
+    },
+    "r0p375": {
+      "pytorch": {
+        "backend": "pytorch",
+        "model_path": "runs/paper_fulltrain_kd_r0p375_e10_b2/best.ckpt",
+        "model_format": "pruned",
+        "metrics": {
+          "per_class": {
+            "0": {
+              "dice": 0.9909269128037596,
+              "iou": 0.9820355180351213,
+              "hd": null,
+              "asd": null
+            },
+            "1": {
+              "dice": 0.930140231232876,
+              "iou": 0.8761862838940545,
+              "hd": null,
+              "asd": null
+            },
+            "2": {
+              "dice": 0.8960072120715832,
+              "iou": 0.8203424551021093,
+              "hd": null,
+              "asd": null
+            },
+            "3": {
+              "dice": 0.7869013851915283,
+              "iou": 0.7361667568035338,
+              "hd": null,
+              "asd": null
+            },
+            "4": {
+              "dice": 0.8716918322546728,
+              "iou": 0.778370488734766,
+              "hd": null,
+              "asd": null
+            }
+          },
+          "average": {
+            "dice": 0.8951335147108839,
+            "iou": 0.8386203005139171,
+            "hd": null,
+            "asd": null
+          },
+          "meta": {
+            "empty_pair_policy": "count_as_one",
+            "heavy": false,
+            "hd_percentile": 95.0,
+            "classes": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "ignore_label": 6
+          }
+        }
+      },
+      "trt_fp16_hostrelay": {
+        "backend": "trt",
+        "model_path": "runs/paper_runtime_formal/r0p375_fp16.engine",
+        "model_format": "state_dict",
+        "metrics": {
+          "per_class": {
+            "0": {
+              "dice": 0.9909300485561634,
+              "iou": 0.9820416747838602,
+              "hd": null,
+              "asd": null
+            },
+            "1": {
+              "dice": 0.9301386662469856,
+              "iou": 0.8761915210206276,
+              "hd": null,
+              "asd": null
+            },
+            "2": {
+              "dice": 0.8960095147291819,
+              "iou": 0.8203432083814993,
+              "hd": null,
+              "asd": null
+            },
+            "3": {
+              "dice": 0.7869248537068394,
+              "iou": 0.7361811736769889,
+              "hd": null,
+              "asd": null
+            },
+            "4": {
+              "dice": 0.8717280453306505,
+              "iou": 0.7784359278692596,
+              "hd": null,
+              "asd": null
+            }
+          },
+          "average": {
+            "dice": 0.8951462257139642,
+            "iou": 0.8386387011464471,
+            "hd": null,
+            "asd": null
+          },
+          "meta": {
+            "empty_pair_policy": "count_as_one",
+            "heavy": false,
+            "hd_percentile": 95.0,
+            "classes": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "ignore_label": 6
+          }
+        }
+      },
+      "trt_int8_real_hostrelay": {
+        "backend": "trt",
+        "model_path": "runs/paper_runtime_formal/r0p375_int8_real.engine",
+        "model_format": "state_dict",
+        "metrics": {
+          "per_class": {
+            "0": {
+              "dice": 0.9909393307806431,
+              "iou": 0.9820593951762407,
+              "hd": null,
+              "asd": null
+            },
+            "1": {
+              "dice": 0.9290164465448637,
+              "iou": 0.8751171962491868,
+              "hd": null,
+              "asd": null
+            },
+            "2": {
+              "dice": 0.8945648793516487,
+              "iou": 0.817838521181852,
+              "hd": null,
+              "asd": null
+            },
+            "3": {
+              "dice": 0.7598818184315473,
+              "iou": 0.7094660186658388,
+              "hd": null,
+              "asd": null
+            },
+            "4": {
+              "dice": 0.8691259456434469,
+              "iou": 0.7748009641280119,
+              "hd": null,
+              "asd": null
+            }
+          },
+          "average": {
+            "dice": 0.88870568415043,
+            "iou": 0.8318564190802261,
+            "hd": null,
+            "asd": null
+          },
+          "meta": {
+            "empty_pair_policy": "count_as_one",
+            "heavy": false,
+            "hd_percentile": 95.0,
+            "classes": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "ignore_label": 6
+          }
+        }
+      },
+      "trt_int8_fitonly64_hostrelay": {
+        "backend": "trt",
+        "model_path": "runs/paper_runtime_formal/r0p375_int8_fitonly64.engine",
+        "model_format": "state_dict",
+        "metrics": {
+          "per_class": {
+            "0": {
+              "dice": 0.9908752407150707,
+              "iou": 0.9819337872938178,
+              "hd": null,
+              "asd": null
+            },
+            "1": {
+              "dice": 0.929960979940905,
+              "iou": 0.8757690619570256,
+              "hd": null,
+              "asd": null
+            },
+            "2": {
+              "dice": 0.8958129595065939,
+              "iou": 0.820137699273811,
+              "hd": null,
+              "asd": null
+            },
+            "3": {
+              "dice": 0.7734138993011124,
+              "iou": 0.7230973978066582,
+              "hd": null,
+              "asd": null
+            },
+            "4": {
+              "dice": 0.8706628353088751,
+              "iou": 0.7766707934353544,
+              "hd": null,
+              "asd": null
+            }
+          },
+          "average": {
+            "dice": 0.8921451829545115,
+            "iou": 0.8355217479533333,
+            "hd": null,
+            "asd": null
+          },
+          "meta": {
+            "empty_pair_policy": "count_as_one",
+            "heavy": false,
+            "hd_percentile": 95.0,
+            "classes": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "ignore_label": 6
+          }
+        }
+      }
+    }
+  },
+  "retained_decisions": [
+    "retain torch.compile(reduce-overhead) as a PyTorch fallback backend, especially for r0.5",
+    "retain TRT FP16 as the preferred deployment backend for both r0.375 and r0.5",
+    "retain fit-only calibration as a better INT8 calibration strategy than generic real calibration for r0.375"
+  ],
+  "rejected_or_not_preferred": [
+    "do not retain max-autotune-no-cudagraphs as the compile mode",
+    "do not retain compile+AMP as an inference backend",
+    "do not retain GPU-direct TRT eval under MONAI sliding-window for quality claims",
+    "do not retain generic real INT8 calibration as the preferred r0.375 backend",
+    "do not retain INT8 as the preferred backend for r0.5 because it gives no latency benefit over FP16"
+  ]
+}

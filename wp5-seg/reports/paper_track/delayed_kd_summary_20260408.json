@@ -1,0 +1,70 @@
+{
+  "plain": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_delayed_kd_plain",
+    "best_finetune_dice": 0.6036861166357994,
+    "recovery": 0.2873088569939136,
+    "total_train_time_sec": 8.74698519706726,
+    "distill_weight": 0.0,
+    "distill_start_epoch": 1,
+    "best_epoch": 5,
+    "best_per_class_dice": {
+      "0": 0.98032306432724,
+      "1": 0.7705343127250671,
+      "2": 0.8482362389564514,
+      "3": 0.20070955753326417,
+      "4": 0.21862740963697433
+    },
+    "wall_clock_sec": 15.983943939208984
+  },
+  "immediate_kd_w0p1": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_delayed_kd_immediate_kd_w0p1",
+    "best_finetune_dice": 0.6892324112309143,
+    "recovery": 0.3728551515890285,
+    "total_train_time_sec": 11.432502031326294,
+    "distill_weight": 0.1,
+    "distill_start_epoch": 1,
+    "best_epoch": 5,
+    "best_per_class_dice": {
+      "0": 0.9817948281764984,
+      "1": 0.8844404280185699,
+      "2": 0.8152842402458191,
+      "3": 0.11735246998723596,
+      "4": 0.6472900897264481
+    },
+    "wall_clock_sec": 19.288952589035034
+  },
+  "delayed_kd_w0p1_s2": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_delayed_kd_delayed_kd_w0p1_s2",
+    "best_finetune_dice": 0.6726737427711487,
+    "recovery": 0.3562964831292629,
+    "total_train_time_sec": 10.805725812911987,
+    "distill_weight": 0.1,
+    "distill_start_epoch": 2,
+    "best_epoch": 5,
+    "best_per_class_dice": {
+      "0": 0.9829447388648986,
+      "1": 0.8908481478691102,
+      "2": 0.8240052402019501,
+      "3": 0.1831633120775223,
+      "4": 0.48240727484226226
+    },
+    "wall_clock_sec": 18.252273559570312
+  },
+  "delayed_kd_w0p1_s3": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_delayed_kd_delayed_kd_w0p1_s3",
+    "best_finetune_dice": 0.6853389412164688,
+    "recovery": 0.368961681574583,
+    "total_train_time_sec": 10.310121774673462,
+    "distill_weight": 0.1,
+    "distill_start_epoch": 3,
+    "best_epoch": 5,
+    "best_per_class_dice": {
+      "0": 0.9831770122051239,
+      "1": 0.8803162693977356,
+      "2": 0.8298334896564483,
+      "3": 0.2077429860830307,
+      "4": 0.5256249487400055
+    },
+    "wall_clock_sec": 17.792763710021973
+  }
+}

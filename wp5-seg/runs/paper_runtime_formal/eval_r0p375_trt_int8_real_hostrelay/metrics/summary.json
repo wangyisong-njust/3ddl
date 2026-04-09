@@ -1,0 +1,58 @@
+{
+  "backend": "trt",
+  "model_path": "runs/paper_runtime_formal/r0p375_int8_real.engine",
+  "model_format": "state_dict",
+  "metrics": {
+    "per_class": {
+      "0": {
+        "dice": 0.9909393307806431,
+        "iou": 0.9820593951762407,
+        "hd": null,
+        "asd": null
+      },
+      "1": {
+        "dice": 0.9290164465448637,
+        "iou": 0.8751171962491868,
+        "hd": null,
+        "asd": null
+      },
+      "2": {
+        "dice": 0.8945648793516487,
+        "iou": 0.817838521181852,
+        "hd": null,
+        "asd": null
+      },
+      "3": {
+        "dice": 0.7598818184315473,
+        "iou": 0.7094660186658388,
+        "hd": null,
+        "asd": null
+      },
+      "4": {
+        "dice": 0.8691259456434469,
+        "iou": 0.7748009641280119,
+        "hd": null,
+        "asd": null
+      }
+    },
+    "average": {
+      "dice": 0.88870568415043,
+      "iou": 0.8318564190802261,
+      "hd": null,
+      "asd": null
+    },
+    "meta": {
+      "empty_pair_policy": "count_as_one",
+      "heavy": false,
+      "hd_percentile": 95.0,
+      "classes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "ignore_label": 6
+    }
+  }
+}

@@ -1,0 +1,18 @@
+Building test datalist from: /home/kaixin/yisong/3ddl/wp5-seg/3ddl-dataset/data
+/home/kaixin/yisong/3ddl/wp5-seg/.venv/lib/python3.12/site-packages/monai/utils/deprecate_utils.py:321: FutureWarning: monai.transforms.spatial.dictionary Orientationd.__init__:labels: Current default value of argument `labels=(('L', 'R'), ('P', 'A'), ('I', 'S'))` was changed in version None from `labels=(('L', 'R'), ('P', 'A'), ('I', 'S'))` to `labels=None`. Default value changed to None meaning that the transform now uses the 'space' of a meta-tensor, if applicable, to determine appropriate axis labels.
+  warn_deprecated(argname, msg, warning_category)
+BasicUNet features: (16, 16, 32, 64, 128, 16).
+Detected pruned model: features=(16, 16, 32, 64, 128, 16)
+Loaded checkpoint: /home/kaixin/yisong/3ddl/wp5-seg/runs/paper_fulltrain_featurekd_w200_e10_b2/best.ckpt
+/home/kaixin/yisong/3ddl/wp5-seg/.venv/lib/python3.12/site-packages/monai/inferers/utils.py:231: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:345.)
+  win_data = inputs[unravel_slice[0]].to(sw_device)
+/home/kaixin/yisong/3ddl/wp5-seg/.venv/lib/python3.12/site-packages/monai/inferers/utils.py:370: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:345.)
+  out[idx_zm] += p
+Per-class Dice/IoU (0..4):
+  class 0: dice=0.990715 iou=0.981625
+  class 1: dice=0.927213 iou=0.868090
+  class 2: dice=0.887127 iou=0.806378
+  class 3: dice=0.741830 iou=0.689985
+  class 4: dice=0.870678 iou=0.776475
+Average: dice=0.883513 iou=0.824511
+Saved metrics to: /home/kaixin/yisong/3ddl/wp5-seg/runs/paper_fulltrain_featurekd_w200_e10_b2_eval/metrics/summary.json

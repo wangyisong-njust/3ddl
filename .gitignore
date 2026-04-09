@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.egg
+
+# Virtual environments
+intelliscan/.venv/
+wp5-seg/.venv/
+
+# Large experiment output directories (NIfTI volumes, multi-GB each)
+intelliscan/output_*/
+!intelliscan/output_smoke/
+
+# Dataset (large, managed separately)
+wp5-seg/3ddl-dataset/
+
+# Training checkpoints (keep runs/ structure but exclude large .ckpt files)
+# Include the runs/ directory structure and logs, exclude bulk checkpoints
+wp5-seg/runs/*/best.ckpt
+wp5-seg/runs/*/last.ckpt
+
+# Sub-repo git dirs (we flatten into one repo)
+intelliscan/.git/
+wp5-seg/.git/
+wp5-seg/3ddl-dataset/.git/
+
+# LaTeX build artifacts
+docs/formal_report/*.aux
+docs/formal_report/*.log
+docs/formal_report/*.out
+docs/formal_report/*.toc
+docs/formal_report/*.lof
+docs/formal_report/*.lot
+docs/formal_report/*.pdf
+docs/formal_report/*.synctex*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Temp
+*.tmp
+.tmp_*
+.codex

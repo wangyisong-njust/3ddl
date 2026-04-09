@@ -1,0 +1,38 @@
+{
+  "teacher_10": {
+    "average_dice": 0.7812997927516699,
+    "average_iou": 0.7207968414202333,
+    "per_class_dice": {
+      "0": 0.9883524179458618,
+      "1": 0.9039587497711181,
+      "2": 0.9027683556079864,
+      "3": 0.2644603054970503,
+      "4": 0.8469591349363327
+    },
+    "path": "runs/paper_recovery_eval_teacher/metrics/summary.json"
+  },
+  "teacher_50": {
+    "average_dice": 0.8825347362011671,
+    "average_iou": 0.8295776491239668,
+    "per_class_dice": {
+      "0": 0.9905586242675781,
+      "1": 0.9316356086730957,
+      "2": 0.9302811515331268,
+      "3": 0.6889189060777425,
+      "4": 0.8712793904542923
+    },
+    "path": "runs/paper_recovery_eval_teacher_50cases/metrics/summary.json"
+  },
+  "teacher_174": {
+    "average_dice": 0.9053834151390984,
+    "average_iou": 0.8539644175412497,
+    "per_class_dice": {
+      "0": 0.9917330522646849,
+      "1": 0.9410859219644262,
+      "2": 0.903841207767355,
+      "3": 0.7936973639217944,
+      "4": 0.8965595297772309
+    },
+    "path": "runs/paper_recovery_eval_teacher_full/metrics/summary.json"
+  }
+}

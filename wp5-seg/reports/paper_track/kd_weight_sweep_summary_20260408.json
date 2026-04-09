@@ -1,0 +1,42 @@
+{
+  "0.0": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_kd_sweep_bf16_w0p0",
+    "best_finetune_dice": 0.5654914598912001,
+    "pre_finetune_dice": 0.3163772596418858,
+    "recovery": 0.2491142002493143,
+    "total_train_time_sec": 8.818695068359375,
+    "wall_clock_sec": 15.681697607040405
+  },
+  "0.05": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_kd_sweep_bf16_w0p05",
+    "best_finetune_dice": 0.5549733069352805,
+    "pre_finetune_dice": 0.3163772596418858,
+    "recovery": 0.23859604729339468,
+    "total_train_time_sec": 11.350523471832275,
+    "wall_clock_sec": 18.241247415542603
+  },
+  "0.1": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_kd_sweep_bf16_w0p1",
+    "best_finetune_dice": 0.5576835196232424,
+    "pre_finetune_dice": 0.3163772596418858,
+    "recovery": 0.24130625998135657,
+    "total_train_time_sec": 11.259705066680908,
+    "wall_clock_sec": 18.416813373565674
+  },
+  "0.2": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_kd_sweep_bf16_w0p2",
+    "best_finetune_dice": 0.5482181139674503,
+    "pre_finetune_dice": 0.3163772596418858,
+    "recovery": 0.23184085432556456,
+    "total_train_time_sec": 11.239179372787476,
+    "wall_clock_sec": 18.069231271743774
+  },
+  "0.3": {
+    "output_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_kd_sweep_bf16_w0p3",
+    "best_finetune_dice": 0.5416197755868779,
+    "pre_finetune_dice": 0.3163772596418858,
+    "recovery": 0.22524251594499212,
+    "total_train_time_sec": 11.299733638763428,
+    "wall_clock_sec": 18.46770977973938
+  }
+}

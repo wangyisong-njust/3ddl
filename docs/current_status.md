@@ -1,0 +1,336 @@
+# Current Status
+
+## Already Done
+
+- `wp5-seg` has a complete compression toolchain in code: pruning, finetuning, ONNX export, TensorRT build, and benchmarking.
+- `wp5-seg` runtime backend tooling now also supports:
+  - real-data INT8 calibration
+  - fit-only calibration policy search
+  - `torch.compile()` benchmarking
+  - backend-level power / energy measurement
+  - full-case PyTorch vs TensorRT runtime evaluation
+- `intelliscan` has code paths for TensorRT segmentation, batched crop inference, sliding-window bypass, in-memory detection, and combined segmentation + metrology.
+- `intelliscan` now defaults to combined segmentation + metrology, with `--separate-seg-metrology` kept as a legacy fallback.
+- `intelliscan` now defaults to the quantized true in-memory detection path:
+  - no JPG slice write
+  - no per-slice detection `.txt` write
+  - one YOLO instance reused across both views
+  - txt-equivalent two-decimal bbox quantization before 3D merge
+  - `4` CPU workers now prepare in-memory detection images by default
+  - next-batch detection prefetch overlap is now also enabled by default
+  - `--file-detection` keeps the legacy fallback path available
+- `intelliscan` now also has a ramdisk-backed detection harness behind `--ramdisk-detection`:
+  - baseline `nii2jpg(...)` behavior preserved
+  - YOLO still sees `source=<folder>`
+  - per-slice detection `.txt` files are skipped
+- `intelliscan` report generation no longer needs `mmt/img/*.nii.gz` or per-bbox `mmt/pred/*.nii.gz` as report inputs.
+- `intelliscan` now writes `mmt/segmentation_regions.json` so report pages can reconstruct exact crops from the input NIfTI and `segmentation.nii.gz`.
+- `intelliscan` combined default no longer writes per-bbox prediction NIfTIs for GLTF by default.
+- `intelliscan` bump-GLTF generation now has an in-memory path from segmentation results, with `--save-bump-predictions` kept as an explicit fallback.
+- `intelliscan` now also has an explicit larger-direct-ROI experiment flag:
+  - `--direct-roi-size X Y Z`
+  - sliding-window ROI stays unchanged
+  - `intelliscan/scripts/benchmark_seg_met_stage.py` can benchmark cached `bb3d.npy` stage-only runs
+- `intelliscan` now has an experimental adaptive-margin path plus per-run `segmentation_stats.json` traceability, kept behind `--adaptive-margin`.
+- `intelliscan` now also has explicit factor-isolation controls for segmentation experiments:
+  - `--force-sliding-window`
+  - `--force-direct-full-crop`
+  - `scripts/compare_ablation_outputs.py`
+- `intelliscan` now also has a guarded adaptive-margin experiment mode:
+  - `--guarded-adaptive-margin`
+  - `--guard-max-loss-xy`
+  - `--guard-max-loss-z`
+- Formal SN009 outputs exist for three variants:
+  - baseline: `intelliscan/output_formal/SN009_current_gpu/`
+  - `--inmemory`: `intelliscan/output_formal/SN009_current_gpu_inmemory/`
+  - TRT FP16: `intelliscan/output_formal/SN009_current_gpu_trt/`
+- The workspace now also has a dedicated publication-planning note:
+  - `docs/publication_strategy.md`
+  - this note separates validated contributions from proposed innovation directions across model, algorithm, engineering, and runtime layers
+
+## Validated In This Workspace
+
+- SN009 baseline total time: `93.23s`
+- SN009 `--inmemory` total time: `89.86s`
+- SN009 TRT FP16 total time: `81.15s`
+- SN009 baseline vs `--inmemory` full-volume segmentation outputs are identical.
+- SN009 TRT FP16 improves speed but changes defect-sensitive outputs.
+- Fresh SN009 adaptive-margin A/B exists in this pass:
+  - baseline: `intelliscan/output_formal/SN009_adaptive_margin_baseline/`
+  - adaptive: `intelliscan/output_formal/SN009_adaptive_margin_enabled/`
+- On that fresh SN009 A/B, adaptive margin activates `113 / 114` direct crops and reduces:
+  - total time from `91.78s` to `75.44s`
+  - segmentation time from `33.37s` to `20.29s`
+- Fresh factor-isolation ablation matrices now exist for both:
+  - `intelliscan/output_ablation/SN009_*`
+  - `intelliscan/output_ablation/SN002_*`
+- In this ablation pass:
+  - `SN009` shows that the adaptive-margin drift is already present in the context-only variant, while `C vs D` is nearly identical.
+  - `SN002` shows that direct-padded vs sliding-window under the same crop is near-identical and causes no defect-flag flips.
+  - `force-direct-full-crop` drifts heavily on both samples and should be treated as an ablation-only control.
+- Fresh guarded-margin sweep outputs now exist for both:
+  - `intelliscan/output_guarded/SN009_*`
+  - `intelliscan/output_guarded/SN002_*`
+- In this guarded search pass:
+  - `SN009` shows that `G1`-`G4` are almost lossless but recover too little fast path to matter.
+  - `SN009` candidate `G5` (`xy<=12`, `z<=24`) recovers `28 / 114` direct crops and reduces segmentation time from `37.71s` to `31.13s`.
+  - `SN009 G5` still drifts, but far less than full adaptive: class-3 Dice `0.931830`, class-4 Dice `0.955980`, `1 / 114` pad flip, `0 / 114` solder flips.
+  - `SN002` stays exactly identical to baseline under every guarded candidate because fixed margin already fits the ROI everywhere.
+- Fresh `SN009` boundary sweep around the best guarded policy now exists:
+  - `z=21/22/23` all remain near-no-op at `2 / 114` direct crops
+  - `z=24` is the first tested threshold that materially opens the fast path
+- Fresh combined segmentation + metrology A/B runs now exist for:
+  - `intelliscan/output_combined/SN009_*`
+  - `intelliscan/output_combined/SN002_*`
+- In this combined-path validation pass:
+  - `SN009` reduced segmentation+metrology stage time from `64.41s` to `47.64s`
+  - `SN002` reduced segmentation+metrology stage time from `17.97s` to `17.62s`
+  - `segmentation.nii.gz` is identical on both validated samples
+  - corrected separate metrology CSV matches combined CSV on both validated samples
+- The legacy separate metrology path had a `bb`-column pairing bug when filenames were sorted lexicographically; the code now parses bbox index from `pred_<idx>.nii.gz`.
+- Fresh pre-quantization true in-memory detection runs now exist for:
+  - `intelliscan/output_inmemory_true/SN009_*`
+  - `intelliscan/output_inmemory_true/SN002_*`
+- In that pre-quantization validation pass:
+  - checked-in `--inmemory` front-end now removes JPG + detection `.txt` writes and reuses one YOLO model
+  - `SN009` baseline vs checked-in in-memory (`inmemory_true_cv2`) is byte-identical for `bb3d.npy`, `segmentation.nii.gz`, and `metrology.csv`
+  - `SN009` total time drops from `86.42s` to `73.36s`
+  - `SN002` total time drops from `54.82s` to `42.23s`
+  - `SN002` still has small non-zero drift: voxel agreement `0.999996`, class-4 Dice `0.995715`, no defect flips, BLT max abs delta `1.4`
+- Fresh detection-parity reruns now exist for:
+  - `intelliscan/output_ramdisk_detect/SN002_*`
+  - `intelliscan/output_ramdisk_detect/SN009_*`
+- In this detection-parity pass:
+  - pre-quantization `--ramdisk-detection` on `SN002` reproduces the same small drift as the older no-write path, which narrows the root cause away from “disk vs memory” alone
+  - the no-write branches now quantize detections to the same two-decimal precision as the legacy detection `.txt` files before bbox merge
+  - quantized `--inmemory` is exact on both validated samples:
+    - `SN002`: total `52.51s -> 38.38s`, front-end `37.57s -> 23.45s`
+    - `SN009`: total `76.17s -> 61.59s`, front-end `39.16s -> 24.72s`
+  - validated parity for quantized `--inmemory` on both samples:
+    - `bb3d.npy` identical
+    - `segmentation.nii.gz` identical
+    - class Dice `1.0` for classes `0..4`
+    - no defect flips
+    - zero BLT delta
+- Fresh multi-sample validation now exists for:
+  - `intelliscan/output_inmemory_validate/SN002_*`
+  - `intelliscan/output_inmemory_validate/SN003_*`
+  - `intelliscan/output_inmemory_validate/SN008_*`
+  - `intelliscan/output_inmemory_validate/SN009_*`
+  - `intelliscan/output_inmemory_validate/SN010_*`
+  - `intelliscan/output_inmemory_validate/SN011_*`
+  - `intelliscan/output_inmemory_validate/SN012_*`
+  - `intelliscan/output_inmemory_validate/SN061_*`
+- In this multi-sample pass:
+  - quantized in-memory detection is exact on `8 / 8` validated raw scans
+  - mean total speedup is `22.49%`
+  - pooled total speedup is `21.99%`
+  - mean front-end speedup is `35.30%`
+  - default detection has now been switched to the quantized in-memory path, with `--file-detection` kept as an explicit fallback
+- Fresh detection-image-worker validation now exists for:
+  - `intelliscan/output_prefetch/SN002_workers4/`
+  - `intelliscan/output_prefetch/SN003_workers4/`
+  - `intelliscan/output_prefetch/SN008_workers4/`
+  - `intelliscan/output_prefetch/SN009_workers4/`
+  - `intelliscan/output_prefetch/SN010_workers4/`
+  - `intelliscan/output_prefetch/SN011_workers4/`
+  - `intelliscan/output_prefetch/SN012_workers4/`
+  - `intelliscan/output_prefetch/SN061_workers4/`
+- In this detection-image-worker pass:
+  - `SN009` candidate search shows `workers=4` is better than both `1` and `8`
+  - key output files are identical on `8 / 8` validated raw scans:
+    - `bb3d.npy`
+    - `segmentation.nii.gz`
+    - `metrology.csv`
+  - mean total speedup vs the previous quantized in-memory default is `17.84%`
+  - pooled total speedup is `17.14%`
+  - mean detection-phase speedup is `36.00%`
+  - default `detection_image_workers` has now been switched to `4`
+  - one no-flag smoke run on `SN002` confirms the new default path is file-identical to the explicit `workers=4` path
+- Fresh detection-batch-prefetch validation now exists for:
+  - `intelliscan/output_prefetch2/SN002_prefetch4/`
+  - `intelliscan/output_prefetch2/SN003_prefetch4/`
+  - `intelliscan/output_prefetch2/SN008_prefetch4/`
+  - `intelliscan/output_prefetch2/SN009_prefetch4/`
+  - `intelliscan/output_prefetch2/SN010_prefetch4/`
+  - `intelliscan/output_prefetch2/SN011_prefetch4/`
+  - `intelliscan/output_prefetch2/SN012_prefetch4/`
+  - `intelliscan/output_prefetch2/SN061_prefetch4/`
+- In this detection-batch-prefetch pass:
+  - key output files are identical on `8 / 8` validated raw scans:
+    - `bb3d.npy`
+    - `segmentation.nii.gz`
+    - `metrology.csv`
+  - mean total speedup vs the previous `workers=4` default is `14.20%`
+  - pooled total speedup is `13.67%`
+  - mean detection-phase speedup is `34.64%`
+  - pooled detection-phase speedup is `34.73%`
+  - default `detection_batch_prefetch` has now been switched to `True`
+  - one no-flag smoke run on `SN002` confirms the new default path is file-identical to the explicit `workers=4 + prefetch` path
+- Fresh detection-view-prefetch negative-result evidence now exists for:
+  - `intelliscan/output_viewprefetch/SN009_prefetch4_ref/`
+  - `intelliscan/output_viewprefetch/SN009_viewprefetch/`
+  - `intelliscan/output_viewprefetch/analysis/detection_view_prefetch_stage_benchmark.json`
+- In this detection-view-prefetch pass:
+  - the temporary cross-view overlap path stayed exact on validated comparisons
+  - but detection-only repeated benchmarks show it is slower than the kept baseline on both tested samples:
+    - `SN009`: `8.69s -> 9.62s` (`10.62%` slower)
+    - `SN002`: `8.64s -> 8.95s` (`3.67%` slower)
+  - the experimental code path was removed after benchmarking
+- Fresh multi-GPU batch-throughput validation now exists for:
+  - `intelliscan/output_multigpu/analysis/seq1gpu_summary.json`
+  - `intelliscan/output_multigpu/analysis/par2gpu_summary.json`
+  - `intelliscan/output_multigpu/analysis/multigpu_batch_throughput_summary.json`
+- In this multi-GPU throughput pass:
+  - `SN002`, `SN003`, `SN009`, and `SN010` were benchmarked as one 4-sample batch
+  - sequential `1`-GPU wall clock on `GPU 3`: `163.54s`
+  - parallel `2`-GPU wall clock on `GPU 3 + GPU 2`: `90.52s`
+  - batch wall-clock reduction: `44.65%`
+  - key outputs stayed file-identical on `4 / 4` samples
+  - this is a throughput optimization, not a single-sample latency claim
+- Fresh report-without-`mmt/img` validation runs now exist for:
+  - intermediate disk-backed reconstruction:
+    - `intelliscan/output_reportless/SN002_reportless/`
+    - `intelliscan/output_reportless/SN009_reportless/`
+  - final checked-in memory-reuse version:
+    - `intelliscan/output_reportless/SN002_reportless_mem/`
+    - `intelliscan/output_reportless/SN009_reportless_mem/`
+- In this report refactor pass:
+  - `mmt/img` is no longer created
+  - `bb3d.npy` and `segmentation.nii.gz` are identical to the previous combined-default reference on both validated samples
+  - `metrology.csv` is equal after sorting by `filename`
+  - `final_report.pdf` still exists and keeps the same page count on both validated samples
+  - the first disk-backed reconstruction attempt was safe but slower during report generation
+  - the final checked-in memory-reuse version is safe and faster on both validated samples:
+    - `SN002` total time `55.02s -> 54.38s`, report time `0.86s -> 0.81s`
+    - `SN009` total time `86.99s -> 81.15s`, report time `0.92s -> 0.81s`
+- Fresh no-`mmt/pred` GLTF-decoupling runs now exist for:
+  - `intelliscan/output_gltfless/SN002_*`
+  - `intelliscan/output_gltfless/SN009_*`
+- In this GLTF-decoupling pass:
+  - full-pipeline outputs stayed identical on both validated samples:
+    - `bb3d.npy` identical
+    - `segmentation.nii.gz` identical
+    - `metrology.csv` equal after sorting by `filename`
+  - combined default no longer creates `mmt/pred`
+  - isolated same-volume / same-`bb3d` stage benchmarks show:
+    - `SN002`: `7.8960s -> 7.2006s` (`8.81%` faster)
+    - `SN009`: `35.4865s -> 33.5964s` (`5.33%` faster)
+  - single full-pipeline timings are noisier and should not be treated as the primary proof for this optimization
+- Fresh larger-direct-ROI runs now exist for:
+  - `intelliscan/output_directroi/SN009_*`
+  - `intelliscan/output_directroi/SN010_*`
+  - `intelliscan/output_directroi/SN002_roi124_xy/`
+- In this larger-direct-ROI pass:
+  - `SN009` shows that enlarging only `x/y` direct ROI does not materially open the fast path:
+    - `roi118`: `2 / 114` direct crops, `35.37s` seg+met
+    - `roi124`: `2 / 114` direct crops, `35.99s` seg+met
+  - `SN010` is the key negative result:
+    - baseline `roi112`: `91 / 110` direct crops, `16.38s` seg+met
+    - `roi118`: still `91 / 110` direct crops, but class-4 Dice drops to `0.861601`, with `5` pad flips and `21` solder flips
+    - `roi124`: `94 / 110` direct crops, but seg+met stays flat at `16.39s` and drift worsens
+  - repeated stage-only benchmarking on `SN010` confirms no gain:
+    - `roi112`: `8.0760s ± 0.2082s`
+    - `roi124`: `8.3869s ± 0.2616s`
+  - `SN002` control confirms that larger direct padding alone is unsafe:
+    - all boxes were already direct
+    - `roi124` still causes class-4 Dice `0.386047` and `36 / 95` solder-defect flips
+- Pruning artifact exists with `74.97%` parameter reduction from `5,749,509` to `1,438,853`.
+- Fresh `wp5-seg` formal runtime backend outputs now exist under:
+  - `wp5-seg/runs/paper_runtime_formal/`
+  - `wp5-seg/reports/paper_track/020_runtime_backend_calibration_compile_energy.md`
+- In this runtime backend pass:
+  - `torch.compile(reduce-overhead)` beat `max-autotune-no-cudagraphs` on the retained `r=0.5` student:
+    - `4.76 ms` vs `5.96 ms`
+    - compile warmup `4.34s` vs `41.27s`
+  - compile is worth keeping as a PyTorch fallback on `r=0.5`:
+    - eager `6.94 ms`, compile `4.80 ms`
+  - compile is not a strong deployment story on `r=0.375`:
+    - eager `14.82 ms`, compile `13.79 ms`
+    - compiled `r=0.375` is still slightly slower than compiled teacher `13.37 ms`
+  - TRT FP16 is the strongest retained backend on both students:
+    - `r=0.5`: `1.62 ms`, `85.75 W`, average Dice `0.889533`
+    - `r=0.375`: `3.15 ms`, `96.61 W`, average Dice `0.895146`
+  - `r=0.5` INT8 stays at parity-level full-case Dice, but gives no latency win over FP16:
+    - FP16 `1.62 ms`
+    - INT8 real `1.63 ms`
+  - calibration policy matters on `r=0.375`:
+    - generic real INT8 average Dice `0.888706`
+    - fit-only64 INT8 average Dice `0.892145`
+    - both remain below FP16 `0.895146`
+  - the first GPU-direct TRT evaluator is now treated as invalid for quality claims because the resulting artifact collapsed to average Dice `0.291838`; host-relay evaluation is the kept path
+- Fresh `intelliscan` whole-pipeline runtime ranking outputs now exist under:
+  - `intelliscan/output_runtime_rank/`
+  - `wp5-seg/reports/paper_track/021_intelliscan_runtime_candidate_ranking.md`
+- In this whole-pipeline runtime ranking pass on `SN002`, `SN009`, and `SN010`:
+  - `r=0.5` / TRT FP16 is the fastest retained runtime candidate:
+    - mean total latency `29.45s`
+    - pooled total speedup vs teacher `15.78%`
+    - mean pipeline energy `3498.51 J`
+  - `r=0.375` / TRT FP16 is the higher-quality retained runtime candidate:
+    - mean total latency `30.41s`
+    - pooled total speedup vs teacher `13.02%`
+    - mean class-3 Dice vs teacher `0.5389`
+  - `r=0.5` / compile is a whole-pipeline negative result under the current CLI execution model:
+    - mean total latency `50.16s`
+    - pooled total slowdown vs teacher `43.49%`
+    - the compile warmup cost dominates the single-scan workflow
+  - backend choice barely changes teacher-relative drift inside the same student family:
+    - `r=0.375` eager vs TRT FP16 are essentially the same on class `3/4` and defect flips
+    - `r=0.5` eager vs compile vs TRT FP16 are also essentially the same on downstream quality
+  - this means backend optimization does not fix the current compressed-model drift; the main remaining issue is still the student itself
+- Smoke eval summaries exist for CPU and GPU and are nearly identical.
+- The strongest current write-up angle is now documented explicitly:
+  - safe system-level speedups
+  - defect-aware acceptance criteria
+  - causal ablations explaining why some faster variants are unsafe
+
+## Promising But Not Yet Safe To Claim
+
+- Adaptive margin as a production-safe default
+- Guarded adaptive margin as a production-safe default
+- TRT FP16 as a lossless deployment path
+- INT8 as the preferred deployment path
+- `torch.compile()` as a good current single-sample `intelliscan` backend
+- Default-safe equivalence from quantized `--inmemory` beyond the currently validated local raw-scan set
+- A default-safe guardrail space that preserves defect/metrology stability across more than the current two samples
+- Larger direct ROI as a default-safe runtime optimization under the current direct-padded PyTorch path
+
+## Current Blockers
+
+- The current adaptive-margin rule activates the fast path on SN009, but the factor ablation shows the drift is dominated by context shrinkage, especially on clipped dimensions.
+- The guarded search now shows that the usable threshold space is narrow: strict candidates are nearly no-ops, while `G5` is the first candidate with meaningful speedup.
+- `G5` still causes one pad-defect flip on `SN009`, so the best current guardrail is still not default-safe.
+- Only `SN009` exercised real guardrail decisions in this pass; `SN002` is a stability confirmation, not a clipped-case stress test.
+- The local workspace currently exposes only one clipped sample (`SN009`), so further guarded-policy validation needs additional cases.
+- `force-direct-full-crop` is measurably unstable and should not be treated as a deployment path.
+- Quantized `--inmemory` is exact on the current local raw-scan set, but it still needs continued validation on any newly added or production-only cases.
+- The new `detection_image_workers=4` default is validated on the current local raw-scan set, but it still needs continued validation on any newly added or production-only cases.
+- The new `detection_batch_prefetch=True` default is validated on the current local raw-scan set, but it still needs continued validation on any newly added or production-only cases.
+- `--ramdisk-detection` is now mainly an isolation harness; it is not the preferred acceleration path because quantized `--inmemory` is both faster and cleaner.
+- Same-GPU cross-view detection overlap has now also been tested and rejected; it adds scheduling complexity without improving the target stage under the current single-YOLO path.
+- The current positive overlap result is now at the batch orchestration level, not inside one sample: multi-GPU dispatch improves throughput without touching per-sample numerics.
+- The larger-direct-ROI study shows that even without trimming any real crop voxels, changing only the padded direct-path canvas can materially drift defect-sensitive outputs.
+- The strongest direct-ROI negative result appears on `SN010 roi118`: direct/sliding counts stay unchanged, so the drift cannot be blamed on crop routing alone.
+- Repeated stage-only timing on `SN010` shows `roi124` is slower than baseline even where direct-path count increases from `91` to `94`.
+- PyVista is not installed in this workspace, so actual bump GLTF file creation was not revalidated end-to-end after the new in-memory GLTF refactor.
+- TensorRT INT8 now supports real-data calibration, but the current evidence shows:
+  - generic real calibration is still unsafe on `r=0.375`
+- fit-only calibration improves `r=0.375` INT8 quality, but not enough to beat FP16
+  - whole-pipeline fit-only INT8 remains mixed and is not currently upgraded to retained status
+  - `r=0.5` INT8 does not beat FP16 on latency
+- Historical acceleration-report SN002 numbers still exist only in a report, even though this pass added new raw SN002 ablation outputs.
+
+## Highest-Priority Engineering Tasks
+
+1. Validate the new quantized in-memory + `4`-worker + batch-prefetch detection default on any newly added or production-only scans that were not part of the current local raw-scan set.
+2. Revalidate actual GLTF file generation in a PyVista-enabled environment now that the code no longer depends on `mmt/pred`.
+3. Extend the new multi-GPU batch-throughput runner beyond the current 4-sample, 2-GPU validation and measure `1` vs `2` vs `3` GPU scaling.
+
+## Highest-Priority Research Tasks
+
+1. Improve student training or selection under the whole-pipeline gate, then re-run the current retained runtime references:
+   - quality runtime reference: `r=0.375 + TRT FP16`
+   - speed runtime reference: `r=0.5 + TRT FP16`
+2. Move from average Dice-only evaluation toward task-aware compression using class-3/class-4 and metrology-sensitive metrics.
+3. Only revisit INT8 if a deployment-level need remains after FP16 ranking, and prefer fit-only or later QAT over generic calibration.

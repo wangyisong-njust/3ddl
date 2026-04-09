@@ -1,0 +1,22 @@
+{
+  "teacher_full": {
+    "avg_dice": 0.9053834151390984,
+    "class3_dice": 0.7936973639217944,
+    "class4_dice": 0.8965595297772309
+  },
+  "retained_logit_kd_fulltrain": {
+    "avg_dice": 0.889527044574805,
+    "class3_dice": 0.7545048112381549,
+    "class4_dice": 0.8749368314085335,
+    "avg_gap_vs_teacher": -0.015856370564293343
+  },
+  "feature_kd_w200_fulltrain": {
+    "avg_dice": 0.8835125661588906,
+    "class3_dice": 0.7418296000433166,
+    "class4_dice": 0.8706778673262432,
+    "avg_gap_vs_teacher": -0.021870848980207747,
+    "avg_delta_vs_retained_logit_kd": -0.006014478415914404,
+    "class3_delta_vs_retained_logit_kd": -0.012675211194838387,
+    "class4_delta_vs_retained_logit_kd": -0.004258964082290317
+  }
+}

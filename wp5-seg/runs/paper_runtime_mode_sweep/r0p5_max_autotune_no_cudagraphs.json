@@ -1,0 +1,57 @@
+{
+  "model_1": {
+    "path": "runs/paper_fulltrain_kd_c34_2_2_e10_b2/best.ckpt",
+    "features": [
+      16,
+      16,
+      32,
+      64,
+      128,
+      16
+    ],
+    "fp32": {
+      "precision": "FP32",
+      "compile_mode": null,
+      "first_run_ms": 170.56595347821712,
+      "mean_ms": 7.347287517040968,
+      "std_ms": 1.6763209432963466,
+      "min_ms": 6.253866478800774,
+      "max_ms": 10.59405505657196,
+      "median_ms": 6.316660903394222,
+      "throughput_fps": 136.1046505503759,
+      "power": {
+        "sample_count": 1,
+        "avg_power_w": 85.3499984741211,
+        "max_power_w": 85.3499984741211,
+        "avg_utilization_pct": 16.0,
+        "wall_time_s": 0.14924678206443787,
+        "energy_j": 12.738212621467255,
+        "idle_power_w": 75.434,
+        "dynamic_energy_j": 1.4799308632184496,
+        "joules_per_iteration": 0.6369106310733628
+      }
+    },
+    "compile_max-autotune-no-cudagraphs_fp32": {
+      "precision": "compile:max-autotune-no-cudagraphs+FP32",
+      "compile_mode": "max-autotune-no-cudagraphs",
+      "first_run_ms": 41273.070227354765,
+      "mean_ms": 5.957260448485613,
+      "std_ms": 1.4548833244098414,
+      "min_ms": 4.782687872648239,
+      "max_ms": 8.453641086816788,
+      "median_ms": 4.86327800899744,
+      "throughput_fps": 167.8623939052738,
+      "power": {
+        "sample_count": 1,
+        "avg_power_w": 74.47000122070312,
+        "max_power_w": 74.47000122070312,
+        "avg_utilization_pct": 0.0,
+        "wall_time_s": 0.12151661328971386,
+        "energy_j": 9.0493423400207,
+        "idle_power_w": 76.552,
+        "dynamic_energy_j": 0.0,
+        "joules_per_iteration": 0.45246711700103504
+      }
+    }
+  }
+}

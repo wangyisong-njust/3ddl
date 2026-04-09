@@ -1,0 +1,142 @@
+{
+  "baseline_uniform_pilot": {
+    "run_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_supervised_reweight_r0p5_plainpilot",
+    "pre_finetune_dice": 0.7502666720934211,
+    "best_finetune_dice": 0.7674301168322565,
+    "recovery": 0.017163444738835354,
+    "boundary_loss_weight": 0.0,
+    "boundary_classes": null,
+    "subset_ratio": 0.05,
+    "epochs": 3,
+    "max_eval_cases": 10,
+    "best_metrics": {
+      "epoch": 2,
+      "avg_dice": 0.7674301168322565,
+      "per_class_dice": {
+        "0": 0.9865162253379822,
+        "1": 0.8943546295166016,
+        "2": 0.9144134402275086,
+        "3": 0.1753033444285393,
+        "4": 0.86656294465065
+      },
+      "train_loss": 0.12519696354866028,
+      "supervised_loss": 0.11484191864728928,
+      "kd_loss": 0.10355044702688852,
+      "feature_kd_loss": 0.0,
+      "kd_active": true,
+      "distill_start_epoch": 1
+    }
+  },
+  "boundary_bw025_pilot": {
+    "run_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_boundaryloss_r0p5_bw025pilot",
+    "pre_finetune_dice": 0.7502666720934211,
+    "best_finetune_dice": 0.78303635597229,
+    "recovery": 0.032769683878868916,
+    "boundary_loss_weight": 0.25,
+    "boundary_classes": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "subset_ratio": 0.05,
+    "epochs": 3,
+    "max_eval_cases": 10,
+    "best_metrics": {
+      "epoch": 2,
+      "avg_dice": 0.78303635597229,
+      "per_class_dice": {
+        "0": 0.9869876027107238,
+        "1": 0.9067858576774597,
+        "2": 0.9073322772979736,
+        "3": 0.2405160903930664,
+        "4": 0.8735599517822266
+      },
+      "train_loss": 0.2150849888722102,
+      "supervised_loss": 0.1324078306555748,
+      "kd_loss": 0.15052977949380875,
+      "feature_kd_loss": 0.0,
+      "boundary_loss": 0.27049672106901806,
+      "kd_active": true,
+      "distill_start_epoch": 1
+    }
+  },
+  "boundary_bw05_pilot": {
+    "run_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_boundaryloss_r0p5_bw05pilot",
+    "pre_finetune_dice": 0.7502666720934211,
+    "best_finetune_dice": 0.7799990737438202,
+    "recovery": 0.029732401650399032,
+    "boundary_loss_weight": 0.5,
+    "boundary_classes": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "subset_ratio": 0.05,
+    "epochs": 3,
+    "max_eval_cases": 10,
+    "best_metrics": {
+      "epoch": 2,
+      "avg_dice": 0.7799990737438202,
+      "per_class_dice": {
+        "0": 0.9829378247261047,
+        "1": 0.9032589495182037,
+        "2": 0.8960261464118957,
+        "3": 0.2605035245418549,
+        "4": 0.8572689235210419
+      },
+      "train_loss": 0.2868834098180135,
+      "supervised_loss": 0.14723369777202605,
+      "kd_loss": 0.18862497011820475,
+      "feature_kd_loss": 0.0,
+      "boundary_loss": 0.2415744334459305,
+      "kd_active": true,
+      "distill_start_epoch": 1
+    }
+  },
+  "boundary_bw025_fulltrain": {
+    "run_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_fulltrain_boundary_bw025_e10_b2",
+    "pre_finetune_dice": 0.8895277527739006,
+    "best_finetune_dice": 0.8895277527739006,
+    "recovery": 0.0,
+    "boundary_loss_weight": 0.25,
+    "boundary_classes": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "subset_ratio": 1.0,
+    "epochs": 10,
+    "max_eval_cases": null,
+    "best_metrics": null
+  },
+  "retained_fulltrain_baseline": {
+    "run_dir": "/home/kaixin/yisong/3ddl/wp5-seg/runs/paper_fulltrain_kd_c34_2_2_e10_b2",
+    "pre_finetune_dice": 0.33413106972725004,
+    "best_finetune_dice": 0.8895277527739006,
+    "recovery": 0.5553966830466506,
+    "boundary_loss_weight": 0.0,
+    "boundary_classes": null,
+    "subset_ratio": 1.0,
+    "epochs": 10,
+    "max_eval_cases": null,
+    "best_metrics": {
+      "epoch": 7,
+      "avg_dice": 0.8895277527739006,
+      "per_class_dice": {
+        "0": 0.9907328113057148,
+        "1": 0.9337954099836021,
+        "2": 0.8936674529793619,
+        "3": 0.7545048112381549,
+        "4": 0.8749382783626688
+      },
+      "train_loss": 0.12402969690992312,
+      "supervised_loss": 0.11394647735774711,
+      "kd_loss": 0.10083219527907014,
+      "kd_active": true,
+      "distill_start_epoch": 1
+    }
+  }
+}

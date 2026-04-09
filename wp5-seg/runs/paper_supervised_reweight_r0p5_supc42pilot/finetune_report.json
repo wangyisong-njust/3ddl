@@ -1,0 +1,78 @@
+{
+  "pre_finetune_dice": 0.7502666720934211,
+  "best_finetune_dice": 0.7620813617110253,
+  "recovery": 0.011814689617604124,
+  "features": [
+    16,
+    16,
+    32,
+    64,
+    128,
+    16
+  ],
+  "params": 1438853,
+  "epochs": 3,
+  "lr": 0.0001,
+  "subset_ratio": 0.05,
+  "total_train_time_sec": 11.12362813949585,
+  "amp": true,
+  "amp_dtype": "bf16",
+  "teacher_model_path": "/home/kaixin/yisong/3ddl/intelliscan/models/segmentation_model.ckpt",
+  "teacher_model_format": "state_dict",
+  "teacher_features": [
+    32,
+    32,
+    64,
+    128,
+    256,
+    32
+  ],
+  "distill_weight": 0.1,
+  "distill_temperature": 2.0,
+  "distill_start_epoch": 1,
+  "kd_class_weights": [
+    1.0,
+    1.0,
+    1.0,
+    2.0,
+    2.0
+  ],
+  "supervised_class_weights": [
+    1.0,
+    1.0,
+    1.0,
+    4.0,
+    2.0
+  ],
+  "feature_distill_weight": 0.0,
+  "feature_distill_layers": [
+    "conv_0",
+    "down_1.convs",
+    "down_2.convs",
+    "down_3.convs",
+    "down_4.convs"
+  ],
+  "max_eval_cases": 10,
+  "pruning_info": {
+    "original_features": [
+      32,
+      32,
+      64,
+      128,
+      256,
+      32
+    ],
+    "pruned_features": [
+      16,
+      16,
+      32,
+      64,
+      128,
+      16
+    ],
+    "original_params": 5749509,
+    "pruned_params": 1438853,
+    "reduction_pct": 74.97,
+    "pruning_ratio": 0.5
+  }
+}

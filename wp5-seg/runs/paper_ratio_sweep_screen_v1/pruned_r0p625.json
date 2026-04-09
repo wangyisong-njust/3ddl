@@ -1,0 +1,22 @@
+{
+  "original_features": [
+    32,
+    32,
+    64,
+    128,
+    256,
+    32
+  ],
+  "pruned_features": [
+    12,
+    12,
+    24,
+    48,
+    96,
+    12
+  ],
+  "original_params": 5749509,
+  "pruned_params": 809909,
+  "reduction_pct": 85.91,
+  "pruning_ratio": 0.625
+}

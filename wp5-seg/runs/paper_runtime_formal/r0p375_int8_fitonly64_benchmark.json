@@ -1,0 +1,67 @@
+{
+  "pytorch_fp32": {
+    "compile_mode": null,
+    "first_run_ms": 172.16494493186474,
+    "mean_ms": 16.376630449667573,
+    "std_ms": 0.20819860821646202,
+    "min_ms": 15.948638319969177,
+    "median_ms": 16.364045441150665,
+    "p95_ms": 16.7426279745996,
+    "p99_ms": 16.809533517807722,
+    "fps": 61.06262231864058,
+    "power": {
+      "sample_count": 13,
+      "avg_power_w": 189.44921875,
+      "max_power_w": 292.1099853515625,
+      "avg_utilization_pct": 79.69230651855469,
+      "wall_time_s": 1.3109935410320759,
+      "energy_j": 248.36670213482284,
+      "idle_power_w": 119.32933333333334,
+      "dynamic_energy_j": 91.92671687915924,
+      "joules_per_iteration": 3.1045837766852857
+    }
+  },
+  "pytorch_compile_fp32": {
+    "compile_mode": "reduce-overhead",
+    "first_run_ms": 3230.583844706416,
+    "mean_ms": 14.127189991995692,
+    "std_ms": 1.0212301081730437,
+    "min_ms": 10.895097628235817,
+    "median_ms": 14.221538789570332,
+    "p95_ms": 15.522516798228025,
+    "p99_ms": 15.61916023492813,
+    "fps": 70.78548533477561,
+    "power": {
+      "sample_count": 11,
+      "avg_power_w": 207.6245574951172,
+      "max_power_w": 312.8500061035156,
+      "avg_utilization_pct": 75.36363983154297,
+      "wall_time_s": 1.131288418546319,
+      "energy_j": 234.8832573000304,
+      "idle_power_w": 121.47466666666668,
+      "dynamic_energy_j": 97.46037375325581,
+      "joules_per_iteration": 2.93604071625038
+    }
+  },
+  "trt_int8_fitonly64": {
+    "first_run_ms": 19.579747691750526,
+    "mean_ms": 2.7873074635863304,
+    "std_ms": 0.043039878333115664,
+    "min_ms": 2.7024075388908386,
+    "median_ms": 2.8017163276672363,
+    "p95_ms": 2.837406098842621,
+    "p99_ms": 2.842186391353607,
+    "fps": 358.7691752933977,
+    "power": {
+      "sample_count": 2,
+      "avg_power_w": 106.93000030517578,
+      "max_power_w": 117.36000061035156,
+      "avg_utilization_pct": 21.0,
+      "wall_time_s": 0.24199513159692287,
+      "energy_j": 25.876539495510016,
+      "idle_power_w": 144.68933333333334,
+      "dynamic_energy_j": 0.0,
+      "joules_per_iteration": 0.3234567436938752
+    }
+  }
+}

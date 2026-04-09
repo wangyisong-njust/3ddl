@@ -1,0 +1,155 @@
+{
+  "run": {
+    "path": "../../runs/paper_fulltrain_kd_c34_2_2_e10_b2_ckptpanel",
+    "recipe": {
+      "distill_weight": 0.1,
+      "distill_temperature": 2.0,
+      "kd_class_weights": [1, 1, 1, 2, 2],
+      "save_eval_checkpoints": true
+    }
+  },
+  "fullcase_panel": {
+    "epoch_001": {
+      "avg_dice": 0.8679985335674779,
+      "class_3_dice": 0.6449012594490215,
+      "class_4_dice": 0.877376905631745
+    },
+    "epoch_005": {
+      "avg_dice": 0.8848263616363207,
+      "class_3_dice": 0.7271336232279909,
+      "class_4_dice": 0.8800819956365673
+    },
+    "epoch_006": {
+      "avg_dice": 0.8828346987008707,
+      "class_3_dice": 0.7309555848739271,
+      "class_4_dice": 0.8805040150195703
+    },
+    "epoch_007": {
+      "avg_dice": 0.8724092621399068,
+      "class_3_dice": 0.6636777760824938,
+      "class_4_dice": 0.8811420603045101
+    },
+    "epoch_010": {
+      "avg_dice": 0.889427440817971,
+      "class_3_dice": 0.741845612762089,
+      "class_4_dice": 0.8813038706436924
+    }
+  },
+  "sn009_screen": {
+    "best_old_run": {
+      "output": "../../../intelliscan/output_student_deploy/SN009_SN009_student_r0p5",
+      "voxel_agreement": 0.9882937589648895,
+      "class_3_dice": 0.06302666682607108,
+      "class_4_dice": 0.5570292929439191,
+      "pad_flip_count": 63,
+      "solder_flip_count": 22,
+      "blt_mean_abs_delta": 2.026315789473683
+    },
+    "last_old_run": {
+      "output": "../../../intelliscan/output_student_deploy/SN009_SN009_student_r0p5_last",
+      "total_elapsed": 40.793705463409424,
+      "seg_met_elapsed": 28.37598156929016,
+      "voxel_agreement": 0.9890904932870053,
+      "class_3_dice": 0.005068364495741552,
+      "class_4_dice": 0.5310494917475325,
+      "pad_flip_count": 55,
+      "solder_flip_count": 13,
+      "blt_mean_abs_delta": 1.0499999999999998
+    },
+    "epoch_001": {
+      "output": "../../../intelliscan/output_student_deploy/SN009_SN009_student_r0p5_epoch001_panel",
+      "total_elapsed": 41.10234189033508,
+      "seg_met_elapsed": 28.589235305786133,
+      "voxel_agreement": 0.990118623893149,
+      "class_3_dice": 0.24564339712641162,
+      "class_4_dice": 0.5657116032457412,
+      "pad_flip_count": 58,
+      "solder_flip_count": 100,
+      "blt_mean_abs_delta": 1.4307017543859641
+    },
+    "epoch_005": {
+      "output": "../../../intelliscan/output_student_deploy/SN009_SN009_student_r0p5_epoch005",
+      "total_elapsed": 40.7189416885376,
+      "seg_met_elapsed": 28.152854681015015,
+      "voxel_agreement": 0.9912734234518725,
+      "class_3_dice": 0.3026215803569194,
+      "class_4_dice": 0.5927842561538058,
+      "pad_flip_count": 58,
+      "solder_flip_count": 23,
+      "blt_mean_abs_delta": 0.8842105263157901
+    },
+    "epoch_006": {
+      "output": "../../../intelliscan/output_student_deploy/SN009_SN009_student_r0p5_epoch006_panel",
+      "total_elapsed": 41.26180124282837,
+      "seg_met_elapsed": 28.54660201072693,
+      "voxel_agreement": 0.9899010336296229,
+      "class_3_dice": 0.3049446469047255,
+      "class_4_dice": 0.5052462713894668,
+      "pad_flip_count": 56,
+      "solder_flip_count": 75,
+      "blt_mean_abs_delta": 1.657894736842104
+    },
+    "epoch_007": {
+      "output": "../../../intelliscan/output_student_deploy/SN009_SN009_student_r0p5_epoch007_panel",
+      "voxel_agreement": 0.9892970078815609,
+      "class_3_dice": 0.12045272105769589,
+      "class_4_dice": 0.46118790411487265,
+      "pad_flip_count": 37,
+      "solder_flip_count": 86,
+      "blt_mean_abs_delta": 1.442982456140352
+    },
+    "epoch_010": {
+      "output": "../../../intelliscan/output_student_deploy/SN009_SN009_student_r0p5_epoch010_panel",
+      "total_elapsed": 40.12512540817261,
+      "seg_met_elapsed": 27.824089527130127,
+      "voxel_agreement": 0.9870992331946863,
+      "class_3_dice": 0.007922997096650071,
+      "class_4_dice": 0.42088184969969955,
+      "pad_flip_count": 63,
+      "solder_flip_count": 25,
+      "blt_mean_abs_delta": 1.8728070175438587
+    }
+  },
+  "sn002_crosscheck": {
+    "best_old_run": {
+      "output": "../../../intelliscan/output_student_deploy/SN002_SN002_student_r0p5",
+      "voxel_agreement": 0.99695092097591,
+      "class_3_dice": 0.062215071064628584,
+      "class_4_dice": 0.1283507771935859,
+      "pad_flip_count": 2,
+      "solder_flip_count": 65,
+      "blt_mean_abs_delta": 2.7115789473684213
+    },
+    "last_old_run": {
+      "output": "../../../intelliscan/output_student_deploy/SN002_SN002_student_r0p5_last",
+      "total_elapsed": 23.828802347183228,
+      "seg_met_elapsed": 13.20446228981018,
+      "voxel_agreement": 0.9971452325574915,
+      "class_3_dice": 0.475973487986744,
+      "class_4_dice": 0.14162399414776883,
+      "pad_flip_count": 1,
+      "solder_flip_count": 35,
+      "blt_mean_abs_delta": 3.8168421052631576
+    },
+    "epoch_005": {
+      "output": "../../../intelliscan/output_student_deploy/SN002_SN002_student_r0p5_epoch005_panel",
+      "total_elapsed": 23.960542917251587,
+      "seg_met_elapsed": 12.99370527267456,
+      "voxel_agreement": 0.9974864331302198,
+      "class_3_dice": 0.5860778443113772,
+      "class_4_dice": 0.12774864519805587,
+      "pad_flip_count": 0,
+      "solder_flip_count": 32,
+      "blt_mean_abs_delta": 2.623157894736843
+    }
+  },
+  "decision": {
+    "preferred_panel_candidate": "epoch_005",
+    "retained_as_deployment_ready": false,
+    "reason": [
+      "epoch_005 dominates the old best checkpoint on both SN002 and SN009",
+      "epoch_005 improves over last.ckpt on SN002",
+      "epoch_005 still trades against last.ckpt on SN009 defect flips, so no checkpoint is deployment-safe yet"
+    ]
+  }
+}

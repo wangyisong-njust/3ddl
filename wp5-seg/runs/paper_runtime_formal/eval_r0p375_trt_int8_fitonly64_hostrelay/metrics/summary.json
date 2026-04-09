@@ -1,0 +1,58 @@
+{
+  "backend": "trt",
+  "model_path": "runs/paper_runtime_formal/r0p375_int8_fitonly64.engine",
+  "model_format": "state_dict",
+  "metrics": {
+    "per_class": {
+      "0": {
+        "dice": 0.9908752407150707,
+        "iou": 0.9819337872938178,
+        "hd": null,
+        "asd": null
+      },
+      "1": {
+        "dice": 0.929960979940905,
+        "iou": 0.8757690619570256,
+        "hd": null,
+        "asd": null
+      },
+      "2": {
+        "dice": 0.8958129595065939,
+        "iou": 0.820137699273811,
+        "hd": null,
+        "asd": null
+      },
+      "3": {
+        "dice": 0.7734138993011124,
+        "iou": 0.7230973978066582,
+        "hd": null,
+        "asd": null
+      },
+      "4": {
+        "dice": 0.8706628353088751,
+        "iou": 0.7766707934353544,
+        "hd": null,
+        "asd": null
+      }
+    },
+    "average": {
+      "dice": 0.8921451829545115,
+      "iou": 0.8355217479533333,
+      "hd": null,
+      "asd": null
+    },
+    "meta": {
+      "empty_pair_policy": "count_as_one",
+      "heavy": false,
+      "hd_percentile": 95.0,
+      "classes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "ignore_label": 6
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "source_split": "train",
+  "fit_only": true,
+  "requested_samples": 64,
+  "selected_samples": 64,
+  "exact_shape_count": 0,
+  "adapted_count": 64,
+  "cropped_sample_count": 0,
+  "padded_sample_count": 64,
+  "cropped_voxels_total": 0,
+  "padded_voxels_total": 5523
+}

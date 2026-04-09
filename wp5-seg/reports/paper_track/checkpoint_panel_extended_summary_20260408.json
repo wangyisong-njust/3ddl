@@ -1,0 +1,71 @@
+{
+  "samples": {
+    "SN002": {
+      "last_old_run": {
+        "voxel_agreement": 0.9971452325574915,
+        "class_3_dice": 0.475973487986744,
+        "class_4_dice": 0.14162399414776883,
+        "pad_flip_count": 1,
+        "solder_flip_count": 35,
+        "blt_mean_abs_delta": 3.8168421052631576
+      },
+      "epoch_005": {
+        "voxel_agreement": 0.9974864331302198,
+        "class_3_dice": 0.5860778443113772,
+        "class_4_dice": 0.12774864519805587,
+        "pad_flip_count": 0,
+        "solder_flip_count": 32,
+        "blt_mean_abs_delta": 2.623157894736843
+      }
+    },
+    "SN009": {
+      "last_old_run": {
+        "voxel_agreement": 0.9890904932870053,
+        "class_3_dice": 0.005068364495741552,
+        "class_4_dice": 0.5310494917475325,
+        "pad_flip_count": 55,
+        "solder_flip_count": 13,
+        "blt_mean_abs_delta": 1.0499999999999998
+      },
+      "epoch_005": {
+        "voxel_agreement": 0.9912734234518725,
+        "class_3_dice": 0.3026215803569194,
+        "class_4_dice": 0.5927842561538058,
+        "pad_flip_count": 58,
+        "solder_flip_count": 23,
+        "blt_mean_abs_delta": 0.8842105263157901
+      }
+    },
+    "SN010": {
+      "teacher_reference": "../../../intelliscan/output_student_deploy/SN010_SN010_teacher_ref",
+      "last_old_run": {
+        "output": "../../../intelliscan/output_student_deploy/SN010_SN010_student_r0p5_last",
+        "voxel_agreement": 0.996496121515665,
+        "class_3_dice": 0.8043374262478074,
+        "class_4_dice": 0.2708922293435958,
+        "pad_flip_count": 8,
+        "solder_flip_count": 51,
+        "blt_mean_abs_delta": 4.721818181818181
+      },
+      "epoch_005": {
+        "output": "../../../intelliscan/output_student_deploy/SN010_SN010_student_r0p5_epoch005_panel",
+        "voxel_agreement": 0.9962525322984985,
+        "class_3_dice": 0.829192142578379,
+        "class_4_dice": 0.2518996480208547,
+        "pad_flip_count": 6,
+        "solder_flip_count": 53,
+        "blt_mean_abs_delta": 4.149090909090908
+      },
+      "runtime_note": "SN010 last and epoch_005 were launched concurrently on the same GPU; use SN010 for quality-only comparison, not timing."
+    }
+  },
+  "decision": {
+    "preferred_panel_candidate": "epoch_005",
+    "retained_as_deployment_ready": false,
+    "reason": [
+      "epoch_005 beats last on SN002",
+      "epoch_005 improves class-3 and BLT on SN009 but still has more defect flips than last",
+      "epoch_005 also improves pad flips, class-3, and BLT on SN010, but does not dominate last on every defect metric"
+    ]
+  }
+}

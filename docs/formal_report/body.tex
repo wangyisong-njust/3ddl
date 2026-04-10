@@ -151,11 +151,15 @@ The segmentation model assigns each voxel to one of five semantic classes:
 \end{tabular}
 \end{table}
 
-Classes are highly imbalanced: background dominates each crop, while void (class~3) is the rarest and most clinically important class. The training set contains labelled 3D crops extracted from a separate set of annotated scans; the full evaluation set comprises 174 test cases. For whole-pipeline validation, eight raw scans (SN002, SN003, SN008, SN009, SN010, SN011, SN012, SN061) are used, with SN009 (114~detected bumps) serving as the primary benchmark sample.
+Classes are highly imbalanced: background dominates each crop, while void (class~3) is the rarest and most clinically important class. The dataset contains 787~labelled 3D bump crops from 72~distinct scan serial numbers, split into 613~training samples (57~serials) and 174~test samples (15~serials). For whole-pipeline validation, eight raw scans (SN002, SN003, SN008, SN009, SN010, SN011, SN012, SN061) are used, with SN009 (114~detected bumps) serving as the primary benchmark. The eight scans were selected to cover a range of bump counts (95--114), die configurations (single-die and interposer stacks), and both clipped and non-clipped crop geometries.
+
+\subsection{Training Configuration}
+
+The teacher model (MONAI BasicUNet, features $(32, 32, 64, 128, 256, 32)$, 5.75M parameters) was trained with the following hyperparameters: Novograd optimizer, learning rate $1 \times 10^{-3}$, batch size~4, 30~epochs, MultiStepLR schedule (milestones at 60\% and 85\% of training), loss $0.5 \cdot L_\text{CE} + 0.5 \cdot L_\text{Dice}$ with ignore label~6. Input ROI size is $(112, 112, 80)$ voxels. Data augmentation consists of random flips on all three spatial axes and random spatial cropping. Preprocessing applies percentile clipping (p1--p99) followed by z-score normalization. All training uses mixed precision (bfloat16) on NVIDIA L40 GPUs (48\,GB VRAM).
 
 \subsection{Software and Hardware Platform}
 
-The implementation platform consists of two repositories: \emph{wp5-seg} for model training, pruning, distillation, ONNX export, TensorRT engine building, and deployment benchmarking; and \emph{intelliscan} for end-to-end raw-scan inference including detection, segmentation, metrology, and reporting. The segmentation backbone is a MONAI BasicUNet-style 3D encoder--decoder network with features $(32, 32, 64, 128, 256, 32)$ and 5.75M parameters. The detection stage uses a YOLO-based 2D detector applied to two orthogonal slice views. All experiments run on NVIDIA L40 GPUs (48\,GB VRAM).
+The implementation consists of two repositories: \emph{wp5-seg} for model training, pruning, distillation, ONNX export, TensorRT engine building, and deployment benchmarking; and \emph{intelliscan} for end-to-end raw-scan inference including detection, segmentation, metrology, and reporting. The detection stage uses a YOLO-based 2D detector applied to two orthogonal slice views. Energy consumption is measured by polling GPU power draw via \texttt{nvidia-smi} at 200\,ms intervals during pipeline execution and integrating over total runtime.
 
 \hypertarget{main-contributions-of-this-report}{%
 \section{Main Contributions of This
@@ -379,8 +383,13 @@ C'_l = \left\lfloor (1-r) C_l \right\rfloor
 where \(r \in [0,1)\) is the pruning ratio and \(C'_l\) is the retained
 channel count after structured channel removal. In practice, the
 retained widths are also constrained to remain valid BasicUNet feature
-sizes for the pruned checkpoint and deployment scripts, but the equation
-captures the central design variable used throughout the ratio sweep.
+sizes for the pruned checkpoint and deployment scripts, but the equation captures the central design variable used throughout the ratio sweep.
+
+The channels to remove are selected by importance scoring. For each output channel $j$ in a convolutional layer followed by InstanceNorm, the importance is computed as:
+\[
+s_j = \| \mathbf{W}_j \|_2 \cdot |\gamma_j|
+\]
+where $\| \mathbf{W}_j \|_2$ is the L2-norm of the weight tensor for channel $j$ and $\gamma_j$ is the corresponding InstanceNorm scale parameter {[}4,14{]}. Channels with the lowest $s_j$ are removed. To respect the U-Net skip connections, encoder and decoder levels are pruned symmetrically so that concatenation dimensions remain valid.
 
 \hypertarget{knowledge-distillation}{%
 \subsection{Knowledge Distillation}\label{knowledge-distillation}}
@@ -1231,10 +1240,9 @@ On SN002, the $r$\,=\,0.5 eager deployment produces
 teacher. On SN009, the same student produces
 63/114 pad-misalignment defect flips. The backend does not
 rescue this behavior: the compile and TRT FP16 rows remain numerically
-near-identical to the eager row on the tested panel. This case study
-demonstrates the main methodological claim of the report: high full-case
-Dice is necessary, but not sufficient, for deployment into a thresholded
-metrology workflow.
+near-identical to the eager row on the tested panel. This case study demonstrates the main methodological claim of the report: high full-case Dice is necessary, but not sufficient, for deployment into a thresholded metrology workflow.
+
+The underlying mechanism can be understood as follows. Structured pruning and low-precision quantization both reduce the model's capacity to represent high-frequency spatial features, particularly at class boundaries. Since the interior of large regions (background, pillar, solder bulk) is easy to predict correctly, overall Dice remains high even when boundary voxels shift by a few pixels. However, the metrology stage computes geometric quantities (pad offset, solder extrusion width) directly from these boundaries: a shift of 2--3 voxels at the pad--solder interface can change the measured misalignment ratio by several percent, crossing the 10\% defect threshold. This explains why the deployment gap is concentrated at class~3 (void) and class~4 (pad)---the two classes whose boundaries feed the most threshold-sensitive measurements---while classes~0--2 remain virtually unchanged.
 
 \begin{figure}
 \centering

@@ -361,6 +361,15 @@ The deliverable CSV contains one row per bump with all measurements and defect f
 \hypertarget{model-level-design}{%
 \section{Model-Level Design}\label{model-level-design}}
 
+Figure~\ref{fig:kd-pruning-arch} provides an overview of the model-level acceleration pipeline. The heavy teacher (BasicUNet 3D, features $32 \to 32 \to 64 \to 128 \to 256 \to 32$) is first compressed via structured channel pruning at a configurable ratio~$r$. The pruned student is then fine-tuned under a combined loss that includes standard supervision ($L_\text{sup}$) and a class-aware knowledge distillation term ($L_\text{KD}$) operating at the logit level. Class affinity weights $\alpha_c$ up-weight the defect-relevant classes (void and pad) to preserve the boundaries that feed downstream metrology. The following subsections detail each component.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{../figures/Class-aware distillation and structured pruning pipeline.png}
+\caption{Class-aware knowledge distillation and structured pruning pipeline. The teacher's logits guide the pruned student through a masked KL loss with per-class affinity weights $\alpha_c = [1,1,1,2,2]$, combined with standard supervision loss.}
+\label{fig:kd-pruning-arch}
+\end{figure}
+
 \hypertarget{structured-pruning}{%
 \subsection{Structured Pruning}\label{structured-pruning}}
 

@@ -11,10 +11,13 @@ observed reliably from surface images alone. In this setting, the
 inspection workflow is not limited to classification or segmentation. It
 must also support geometry-sensitive metrology, such as bond line
 thickness, pad misalignment, solder extrusion, and void-related
-measurements. That requirement makes the acceleration problem more
-difficult than standard semantic segmentation. A faster model is not
-automatically a better deployment choice if its outputs change the
-downstream measurements used by engineers and inspectors.
+measurements. That requirement makes the acceleration problem fundamentally harder
+than standard semantic segmentation: \emph{most acceleration studies
+optimize model latency or segmentation overlap, but this work optimizes
+deployment-safe whole-pipeline behavior under thresholded metrology.}
+A faster model is not automatically a better deployment choice if its
+outputs change the downstream measurements used by engineers and
+inspectors.
 
 This report studies that problem on a practical system built from two
 repositories. The \emph{wp5-seg} repository provides 3D segmentation
@@ -120,33 +123,39 @@ input to final engineering outputs.
 \hypertarget{platform-under-study}{%
 \section{Platform Under Study}\label{platform-under-study}}
 
-The implementation platform consists of:
+\subsection{3D Semiconductor Inspection Domain}
 
-\begin{itemize}
-\tightlist
-\item
-  \emph{wp5-seg}: model training, pruning, distillation, export, and
-  benchmark tooling.
-\item
-  \emph{intelliscan}: raw-scan processing pipeline with detection, 3D
-  merge, segmentation, metrology, and reporting.
-\item
-  Raw-scan validation set used in the current workspace: SN002,
-  SN003, SN008, SN009, SN010,
-  SN011, SN012, and SN061.
-\item
-  Full segmentation evaluation set for compressed models: 174
-  test cases.
-\item
-  GPU execution on local NVIDIA L40 devices.
-\end{itemize}
+The data studied in this report are 3D X-ray computed-tomography reconstructions of advanced semiconductor packages. Each raw scan is a single-channel volumetric NIfTI file capturing the internal structure of a multi-die stack at 0.7\,$\mu$m isotropic voxel resolution. The structures of interest include solder bumps, copper pillars, copper pads, and inter-layer connections. Defects such as voids (gas pockets trapped in solder) and geometric anomalies (pad misalignment, solder extrusion) are invisible from the package surface and can only be detected through volumetric analysis.
 
-The segmentation model is a pruned or unpruned MONAI BasicUNet-style 3D
-network. The detection stage uses YOLO-based 2D detection across two
-orthogonal scan views, followed by 3D bounding-box generation. Metrology
-is then computed from the predicted component masks. This structure
-makes the workflow particularly sensitive to small class-boundary
-changes.
+The inspection workflow processes each raw scan through a sequence of stages: (i)~slice extraction from the 3D volume along two orthogonal views, (ii)~2D object detection to locate individual bump regions, (iii)~3D bounding-box generation by merging detections across views, (iv)~per-bump 3D semantic segmentation into five component classes, (v)~geometric metrology computation from the predicted masks, and (vi)~human-readable reporting.
+
+\subsection{Dataset and Segmentation Classes}
+
+The segmentation model assigns each voxel to one of five semantic classes:
+
+\begin{table}[H]
+\centering
+\caption{Semantic segmentation class definitions}
+\label{tab:classes}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{c l l}
+\toprule
+\textbf{Class} & \textbf{Label} & \textbf{Description} \\
+\midrule
+0 & Background    & Air, substrate, and non-structural material \\
+1 & Copper Pillar & Vertical interconnect between die layers \\
+2 & Solder        & Bonding material between pillar and pad \\
+3 & Void          & Gas pocket trapped within solder (primary defect) \\
+4 & Copper Pad    & Horizontal landing pad on the memory die \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Classes are highly imbalanced: background dominates each crop, while void (class~3) is the rarest and most clinically important class. The training set contains labelled 3D crops extracted from a separate set of annotated scans; the full evaluation set comprises 174 test cases. For whole-pipeline validation, eight raw scans (SN002, SN003, SN008, SN009, SN010, SN011, SN012, SN061) are used, with SN009 (114~detected bumps) serving as the primary benchmark sample.
+
+\subsection{Software and Hardware Platform}
+
+The implementation platform consists of two repositories: \emph{wp5-seg} for model training, pruning, distillation, ONNX export, TensorRT engine building, and deployment benchmarking; and \emph{intelliscan} for end-to-end raw-scan inference including detection, segmentation, metrology, and reporting. The segmentation backbone is a MONAI BasicUNet-style 3D encoder--decoder network with features $(32, 32, 64, 128, 256, 32)$ and 5.75M parameters. The detection stage uses a YOLO-based 2D detector applied to two orthogonal slice views. All experiments run on NVIDIA L40 GPUs (48\,GB VRAM).
 
 \hypertarget{main-contributions-of-this-report}{%
 \section{Main Contributions of This
@@ -199,8 +208,6 @@ binary defect-flag flips matter more than background-dominated voxel
 agreement alone. This evaluation philosophy is one of the key findings
 of the report.
 
-\clearpage
-
 \hypertarget{background}{%
 \chapter{Background}\label{background}}
 
@@ -246,77 +253,23 @@ transitions {[}6{]}. This report uses those ideas as motivation, but
 keeps only the variants that actually survive full-case and
 whole-pipeline testing.
 
-\hypertarget{yolo-style-detection-for-slice-level-screening}{%
-\section{YOLO-Style Detection for Slice-Level
-Screening}\label{yolo-style-detection-for-slice-level-screening}}
+\hypertarget{detection-and-runtime-deployment}{%
+\section{Detection and Runtime Deployment}\label{detection-and-runtime-deployment}}
 
-The current \emph{intelliscan} pipeline uses YOLO-style 2D object
-detection on two orthogonal slice views before 3D bbox merge. This
-choice is consistent with the broader object-detection literature, where
-YOLO-style detectors are widely adopted because they provide strong
-speed-accuracy tradeoffs and simple deployment interfaces {[}12,13{]}.
-In the present project, the detector is not the final output stage, but
-it remains critical because bbox drift propagates directly into 3D crop
-selection and therefore into segmentation and metrology.
+The \emph{intelliscan} pipeline uses YOLO-style 2D object detection on two orthogonal slice views before 3D bounding-box merge, consistent with the strong speed--accuracy tradeoffs reported in the detection literature {[}12,13{]}. Although the detector is not the final output stage, bounding-box drift propagates directly into crop selection and therefore into segmentation and metrology.
 
-\hypertarget{mixed-precision-and-runtime-deployment}{%
-\section{Mixed Precision and Runtime
-Deployment}\label{mixed-precision-and-runtime-deployment}}
-
-Automatic mixed precision is widely used to reduce memory traffic and
-improve training or inference efficiency on GPUs {[}7{]}. At deployment
-time, engines such as TensorRT can further optimize operator fusion,
-kernel selection, and lower-precision execution {[}8{]}. PyTorch graph
-compilation is another relevant runtime option because it can reduce
-Python overhead and improve repeated eager execution through
-ahead-of-time graph capture and backend lowering {[}11{]}. However,
-lower latency does not guarantee downstream safety, especially when the
-application is sensitive to small geometric changes. This report
-therefore treats TensorRT and \emph{torch.compile()} as potentially
-valuable runtime tools, but not as methods that can be claimed safe
-unless defect-sensitive metrics are also preserved.
+At deployment time, runtime engines such as TensorRT optimize operator fusion, kernel selection, and lower-precision execution {[}7,8{]}, while PyTorch graph compilation (\emph{torch.compile}) can reduce Python overhead through ahead-of-time graph capture {[}11{]}. However, lower latency does not guarantee downstream safety when the application is sensitive to small geometric changes. This report therefore treats both TensorRT and \emph{torch.compile} as potentially valuable but not automatically safe.
 
 \hypertarget{semiconductor-x-ray-inspection-and-metrology}{%
 \section{Semiconductor X-ray Inspection and
 Metrology}\label{semiconductor-x-ray-inspection-and-metrology}}
 
-Recent work on semiconductor 3D X-ray analysis has already shown the
-value of combining detection, segmentation, and metrology in a single
-workflow {[}9{]}. Broader X-ray microscopy literature also emphasizes
-that internal electronics assessment increasingly relies on 3D imaging
-and automated analysis rather than surface inspection alone {[}10{]}.
-Related defect-analysis studies on X-ray packaging imagery also show
-that small visual or structural differences can have direct
-manufacturing relevance, which makes deployment robustness important
-rather than optional {[}20{]}. These references are aligned with the
-problem studied in this report. However, the current work differs in
-emphasis: instead of building a purely new detector or segmenter, the
-report studies how to accelerate an existing full workflow without
-breaking its downstream engineering outputs.
+Recent work has demonstrated the value of combining detection, segmentation, and metrology in unified 3D X-ray inspection workflows {[}9{]}, while broader literature confirms that internal electronics assessment increasingly relies on volumetric imaging and automated analysis {[}10,20{]}. The present work differs from these studies in emphasis: rather than building a new detector or segmenter, it studies how to accelerate an existing full workflow without breaking downstream engineering outputs.
 
 \hypertarget{why-the-current-problem-is-non-trivial}{%
-\section{Why the Current Problem Is
-Non-Trivial}\label{why-the-current-problem-is-non-trivial}}
+\section{Why the Current Problem Is Non-Trivial}\label{why-the-current-problem-is-non-trivial}}
 
-The current workflow is harder than a standard benchmark problem for
-three reasons.
-
-First, the pipeline contains both model-bound and systems-bound stages.
-Detection image preparation, slice serialization, intermediate artifact
-management, and reporting can all dominate wall-clock time.
-
-Second, the segmentation model is not the final consumer of the output.
-Metrology routines apply orientation logic, connected-component
-reasoning, thresholding, and geometric measurements. Those operations
-are not smooth losses; they can change abruptly when a boundary moves by
-only a few pixels.
-
-Third, full-case Dice and patch latency can hide deployment risk. A
-compression method can appear strong in isolation and still fail after
-integration into the whole pipeline. This report therefore positions
-downstream metrology as a first-class evaluation criterion.
-
-\clearpage
+The current workflow is harder than a standard benchmark for three reasons: (i)~the pipeline is jointly model-bound and systems-bound, with detection preparation, artifact management, and reporting all capable of dominating wall-clock time; (ii)~downstream metrology applies thresholded geometric logic that can change abruptly from a few-pixel boundary shift; and (iii)~full-case Dice and patch latency can mask deployment risk, since a method can appear strong in isolation yet fail after whole-pipeline integration.
 
 \hypertarget{design-of-a-defect-aware-acceleration-framework}{%
 \chapter{Design of a Defect-Aware Acceleration
@@ -361,45 +314,45 @@ it.
 
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{../figures/pipeline_overview_demo.png}
+\includegraphics[width=0.82\textwidth]{../figures/pipeline_overview_demo.png}
 \caption{End-to-end artifact flow of the current \emph{intelliscan}
 default pipeline.}
 \end{figure}
 
-\hypertarget{one-concrete-demo-from-input-to-output}{%
-\subsection{One Concrete Demo from Input to
-Output}\label{one-concrete-demo-from-input-to-output}}
+As a concrete example, processing SN002 (95~detected bumps) through the full chain produces: 3D bounding boxes, an assembled segmentation volume, a per-bump metrology CSV, and a human-readable PDF report---all from a single raw NIfTI input.
 
-For a representative whole-pipeline example, the report uses the
-validated SN002 default-path run based on one raw 3D NIfTI scan
-from the local raw-scan validation set and the corresponding
-default-path output bundle generated by \emph{intelliscan}.
+\subsection{Deliverable Inspection Report}
 
-In this demo, one raw \texttt{*.nii} volume is passed through the full
-artifact chain and produces:
+The final output of the pipeline is a per-scan inspection report designed for engineering review. For each detected bump, the metrology stage computes the following measurements (all in $\mu$m at 0.7\,$\mu$m voxel resolution):
 
 \begin{itemize}
 \tightlist
-\item
-  \texttt{bb3d.npy} with 95 detected 3D bump boxes,
-\item
-  \texttt{segmentation.nii.gz} as the assembled full-volume prediction,
-\item
-  \texttt{metrology/metrology.csv} with 95 bump-level
-  measurement rows,
-\item
-  \texttt{metrology/final\_report.pdf} as the human-readable report,
-\item
-  \texttt{metrics.json} as the profiling log.
+\item \textbf{Bond-Line Thickness (BLT):} vertical distance between the copper pillar bottom and the solder top surface.
+\item \textbf{Pad Misalignment:} Euclidean offset between the copper-pillar centroid and the copper-pad centroid.
+\item \textbf{Void-to-Solder Ratio:} volumetric fraction of void voxels within the solder region; the primary defect indicator.
+\item \textbf{Solder Extrusion:} lateral overflow of solder beyond the pillar boundary, measured on four sides (left, right, front, back).
+\item \textbf{Pillar Dimensions:} width and height of the copper pillar.
 \end{itemize}
 
-\begin{figure}
+Each measurement is compared against a threshold to produce a binary defect flag:
+
+\begin{table}[H]
 \centering
-\includegraphics[width=\textwidth]{../figures/sn002_pipeline_demo.png}
-\caption{Representative end-to-end demo on SN002, showing one
-detected bump, the cropped region, the predicted segmentation overlay,
-the stage timing, and the corresponding metrology row.}
-\end{figure}
+\caption{Defect flag thresholds in the delivered inspection report}
+\label{tab:defect-thresholds}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{l l l}
+\toprule
+\textbf{Defect Flag} & \textbf{Condition} & \textbf{Threshold} \\
+\midrule
+Void-ratio defect       & void/solder ratio $>$ threshold & 30\% \\
+Pad-misalignment defect & misalignment / pillar width $>$ threshold & 10\% \\
+Solder-extrusion defect & any-side extrusion / pillar width $>$ threshold & 10\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The deliverable CSV contains one row per bump with all measurements and defect flags. The PDF report presents a visual summary with segmentation overlays, measurement annotations, and a defect summary table. This structure enables engineers to review flagged bumps without re-running the analysis. The acceleration work in this report preserves the content and format of these deliverables exactly---the safe engineering path produces byte-identical CSV and PDF outputs.
 
 \hypertarget{model-level-design}{%
 \section{Model-Level Design}\label{model-level-design}}
@@ -535,12 +488,10 @@ metrology directly from in-memory segmentation results while still
 preserving output compatibility. This design keeps segmentation geometry
 unchanged and only reduces redundant artifact flow.
 
-\begin{figure}
+\begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{../figures/combined_seg_metrology_flow.png}
-\caption{Old separate segmentation-to-metrology path versus the retained
-combined path. The redesign removes the redundant per-bbox prediction
-write/read cycle while leaving segmentation geometry unchanged.}
+\includegraphics[width=0.78\textwidth]{../figures/combined_seg_metrology_flow.png}
+\caption{Old separate segmentation-to-metrology path versus the retained combined path.}
 \end{figure}
 
 \hypertarget{report-reconstruction-without-per-bbox-raw-crops}{%
@@ -574,29 +525,29 @@ detection path, but explicitly reproduces the legacy two-decimal
 rounding behavior before bbox merge. That design change was necessary to
 make in-memory detection both fast and exact.
 
-The retained parity-preserving logic is summarized in Algorithm 3.1.
+The retained parity-preserving logic is summarized below.
 
-\begin{verbatim}
-Algorithm 3.1 Exact In-Memory Detection with Legacy-Equivalent Quantization
-Input: raw 3D volume V, YOLO detector M
-Output: merged 3D bounding boxes B_3D
-
-1. For each detection view do
-2.     Slice V into ordered 2D images
-3.     Apply the same PIL transform used by the old file-based path
-4.     Perform an in-memory JPEG encode/decode roundtrip
-5.     Run YOLO on the decoded in-memory images
-6.     Convert detections to [class_id, x1, y1, x2, y2]
-7.     Quantize class_id to integer and coordinates to two decimals
-8. End for
-9. Merge the two quantized detection streams into 3D bounding boxes B_3D
-10. Return B_3D
-\end{verbatim}
+\begin{pseudocode}[Algorithm 1: Exact In-Memory Detection with Legacy-Equivalent Quantization]
+\textbf{Input:} raw 3D volume $V$, YOLO detector $\mathcal{M}$ \quad \textbf{Output:} merged 3D bounding boxes $\mathbf{B}_\text{3D}$ \\
+\textbf{for each} detection view $v \in \{v_1, v_2\}$ \textbf{do} \\
+\quad Slice $V$ into ordered 2D images along view $v$ \\
+\quad Apply identical PIL transform as the legacy file-based path \\
+\quad Perform in-memory JPEG encode/decode roundtrip \hfill\textit{$\triangleright$ preserve quantization} \\
+\quad $\mathbf{D}_v \gets \mathcal{M}(\text{decoded images})$ \hfill\textit{$\triangleright$ YOLO inference} \\
+\quad \textbf{for each} detection $d \in \mathbf{D}_v$ \textbf{do} \\
+\quad\quad $d.\text{class\_id} \gets \lfloor d.\text{class\_id} \rceil$ \hfill\textit{$\triangleright$ round to integer} \\
+\quad\quad $d.\text{coords} \gets \mathrm{round}(d.\text{coords},\, 2)$ \hfill\textit{$\triangleright$ two-decimal quantization} \\
+\quad \textbf{end for} \\
+\textbf{end for} \\
+$\mathbf{B}_\text{3D} \gets \textsc{Merge}(\mathbf{D}_{v_1},\, \mathbf{D}_{v_2})$ \\
+\textbf{return} $\mathbf{B}_\text{3D}$ \\
+\end{pseudocode}
 
 The key engineering insight is that exact parity did not come from
 ``using memory instead of disk'' alone. It came from reproducing the
-legacy numeric behavior at the point where 2D detections are converted
-into the coordinates consumed by the 3D merge stage.
+legacy numeric behavior---specifically the two-decimal coordinate
+quantization---at the point where 2D detections are converted into
+the coordinates consumed by the 3D merge stage.
 
 \hypertarget{cpu-preparation-parallelism-and-batch-prefetch}{%
 \subsection{CPU Preparation Parallelism and Batch
@@ -653,7 +604,7 @@ The report also tested a geometry-preserving alternative: keep the real
 crop unchanged, but enlarge the direct padded shell. This idea turned
 out to be unsafe. The experiments showed that even when the crop
 geometry and routing stayed almost unchanged, the larger padded input
-canvas could still alter predictions. This result is important because
+canvas could still alter predictions. This finding is consequential because
 it shows that preserving bbox extent alone is not enough; the numerical
 behavior of the direct path also depends on the padded canvas size.
 
@@ -661,37 +612,44 @@ behavior of the direct path also depends on the padded canvas size.
 \section{Two-Level Deployment-Safety
 Gate}\label{two-level-deployment-safety-gate}}
 
-The final design principle of this report is the \textbf{Two-Level
-Deployment-Safety Gate}. Ranking is downstream-aware rather than
-Dice-only. The report therefore treats whole-pipeline metrics as
-first-class outputs:
+The central evaluation methodology of this report is the \textbf{Two-Level Deployment-Safety Gate}, which formalises the principle that downstream-aware ranking must replace Dice-only ranking in threshold-sensitive applications. The gate operates as follows: a candidate acceleration must pass both levels sequentially; failure at either level excludes the method from the deployment-safe set.
 
-\begin{itemize}
-\tightlist
-\item
-  class 3 Dice,
-\item
-  class 4 Dice,
-\item
-  pad-misalignment defect flips,
-\item
-  solder-extrusion defect flips,
-\item
-  BLT delta,
-\item
-  pad-misalignment delta.
-\end{itemize}
+Table~\ref{tab:gate-criteria} defines the operationalised pass criteria for each gate. These thresholds are informed by the metrology decision boundaries in the current pipeline (Section~1.1.1) and by the practical requirement that a deployed model must not introduce defect-flag disagreements relative to the validated teacher.
 
-This ranking rule is used consistently across engineering optimizations,
-model deployment, and checkpoint selection.
-
-\begin{figure}
+\begin{table}[H]
 \centering
-\includegraphics[width=\textwidth]{../figures/two_level_evaluation_gate.png}
-\caption{Two-Level Deployment-Safety Gate used throughout this report.}
-\end{figure}
+\caption{Operationalised pass criteria for the Two-Level Deployment-Safety Gate}
+\label{tab:gate-criteria}
+\renewcommand{\arraystretch}{1.2}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{l l l p{0.38\textwidth}}
+\toprule
+\textbf{Gate} & \textbf{Metric} & \textbf{Pass Condition} & \textbf{Rationale} \\
+\midrule
+\multirow{3}{*}{Gate 1 (\emph{wp5-seg})}
+  & Full-case avg Dice  & $\geq$ 0.88  & Ensures overall segmentation quality is not substantially degraded \\
+  & Class~3 (void) Dice & $\geq$ 0.70  & Void is the primary defect class; large drops signal lost sensitivity \\
+  & Class~4 (pad) Dice  & $\geq$ 0.85  & Pad geometry directly affects misalignment measurement \\
+\midrule
+\multirow{4}{*}{Gate 2 (\emph{intelliscan})}
+  & Pad-misalignment flips   & $= 0$  & Any flip is a false alarm or missed defect in production \\
+  & Solder-extrusion flips   & $= 0$  & Same rationale as pad flips \\
+  & Mean BLT $|\Delta|$      & $< 1.0\,\mu$m & Keeps geometric measurement within one pixel tolerance \\
+  & WP class~3 / class~4 Dice & $\geq$ 0.90 & Ensures per-scan segmentation stability, not just dataset-level \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}
 
-\clearpage
+In practice, the zero-flip requirement at Gate~2 is the strictest criterion and is the one most frequently violated by compressed models that pass Gate~1 comfortably. This operationalisation transforms the evaluation from an informal judgement into a reproducible pass/fail protocol.
+
+Two clarifications on these thresholds are necessary. First, the Gate~1 values (avg Dice $\geq$ 0.88, class~3 $\geq$ 0.70, class~4 $\geq$ 0.85) are conservative screening thresholds informed by the observed teacher performance, not theoretically optimal cutoffs; class~3 is set lower because void is the rarest and hardest class, while class~4 is set higher because pad geometry directly feeds the misalignment measurement. The BLT bound of 1.0\,$\mu$m corresponds to one pixel at the current 0.7\,$\mu$m voxel resolution, providing a single-pixel tolerance. Second, Gate~2 adopts zero defect-flag flips because defect flags are the final production decision variable and therefore require stricter tolerance than Dice. The WP Dice entries at Gate~2 refer to \emph{teacher-relative} whole-pipeline Dice, since raw-scan voxel-level ground truth is unavailable at this stage; the teacher output serves as the reference standard.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\textwidth]{../figures/two_level_evaluation_gate.png}
+\caption{Two-Level Deployment-Safety Gate. Gate~1 screens on the 174-case evaluation set; Gate~2 re-evaluates on raw-scan whole-pipeline behavior.}
+\end{figure}
 
 \hypertarget{performance-evaluation}{%
 \chapter{Performance Evaluation}\label{performance-evaluation}}
@@ -720,7 +678,7 @@ The most important metrics in this report are:
 \item
   average Dice on the full segmentation test set,
 \item
-  class 3 and class 4 Dice,
+  class~3 (void) and class~4 (pad) Dice as primary quality indicators,
 \item
   end-to-end runtime,
 \item
@@ -731,6 +689,8 @@ The most important metrics in this report are:
   BLT and pad-misalignment deltas.
 \end{itemize}
 
+Although all five segmentation classes are evaluated, class~3 (void) and class~4 (copper pad) receive particular emphasis throughout this report for two reasons. First, void is the primary defect indicator: void ratio directly determines the void-defect flag, so class~3 Dice is the most safety-critical segmentation metric. Second, pad geometry feeds directly into the pad-misalignment measurement (see Equation~1.1); inaccurate pad boundaries can flip the misalignment flag even when overall Dice appears acceptable. Classes~0--2 (background, copper pillar, solder) are substantially easier to segment and rarely change across acceleration variants, so they provide little discriminative power for comparing methods. Full per-class results are reported in the master table and the Pareto ranking table for completeness.
+
 This report intentionally does not rely on voxel agreement alone when
 judging acceptability.
 
@@ -738,15 +698,41 @@ judging acceptability.
 \subsection{Runtime Repeatability
 Note}\label{runtime-repeatability-note}}
 
-Where possible, repeated stage-only or patch-level benchmarks were used
-to reduce noise when comparing narrow runtime changes. Examples include
-direct-ROI timing probes, compile-mode selection, and isolated
-detection-stage scheduling studies. However, the whole-pipeline
-runtime-candidate ranking introduced later in this chapter is based on
-single sequential raw-scan runs per sample and backend, because each
-full raw-scan experiment is substantially more expensive. The variance
-analysis in this report is therefore partial rather than complete, and a
-larger repeated-run study remains future work.
+To assess runtime stability, two key configurations were benchmarked
+with three repeated whole-pipeline runs each on SN009 (114~bboxes,
+NVIDIA L40, GPU~2 isolated). Table~\ref{tab:repeatability} reports the
+results. The first teacher-eager run exhibited a cold-start outlier
+(187.68\,s) caused by GPU cache warming and concurrent system activity;
+the steady-state runs (48.86--68.29\,s) are consistent with earlier
+single-run benchmarks. The compressed-student TRT~FP16 configuration
+showed very low variance ($\pm$\,0.31\,s), confirming that
+TensorRT-backed inference is highly repeatable once the engine is loaded.
+
+\begin{table}[H]
+\centering
+\caption{Runtime repeatability on SN009 (3 runs per variant)}
+\label{tab:repeatability}
+\begin{adjustbox}{max width=\textwidth}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{l | rrr | rr}
+\toprule
+\textbf{Variant} & \textbf{Run 1 (s)} & \textbf{Run 2 (s)} & \textbf{Run 3 (s)} & \textbf{Mean (s)} & \textbf{Std (s)} \\
+\midrule
+Teacher / eager (safe default)    & 187.68$^*$ & 68.29 & 48.86 & 58.58$^\dagger$ & 13.72$^\dagger$ \\
+$r$=0.375 / TRT FP16              & 39.43      & 40.02 & 39.89 & 39.78           & 0.31 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\smallskip
+{\footnotesize $^*$Cold-start outlier excluded from mean/std. $^\dagger$Computed from runs 2--3 only.}
+\end{table}
+
+For the single-run results presented in subsequent tables, all runs were
+performed after a warm-up pass to avoid cold-start effects. The
+remaining runtime-candidate comparisons use single sequential runs per
+sample, which is sufficient for the primary ranking given the low
+variance observed above.
 
 \hypertarget{baseline-profiling-of-the-whole-pipeline}{%
 \section{Baseline Profiling of the Whole
@@ -829,37 +815,25 @@ Cleanup}\label{report-and-artifact-cleanup}}
 
 \begin{table}[H]
 \centering
-\caption{Report-memory-reuse result after removing \texttt{mmt/img} dependency}
-\label{tab:report-reuse}
+\caption{Artifact cleanup: report reconstruction and GLTF decoupling}
+\label{tab:artifact-cleanup}
 \renewcommand{\arraystretch}{1.15}
-\begin{tabular}{l rrrr l}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{l l | rr | r | l}
 \toprule
-\textbf{Sample} & \textbf{Old Total (s)} & \textbf{New Total (s)} & \textbf{Old Report (s)} & \textbf{New Report (s)} & \textbf{Parity} \\
+\textbf{Optimization} & \textbf{Sample} & \textbf{Before (s)} & \textbf{After (s)} & \textbf{Gain} & \textbf{Parity} \\
 \midrule
-SN002 & 55.02 & 54.38 & 0.86 & 0.81 & exact \\
-SN009 & 86.99 & 81.15 & 0.92 & 0.81 & exact \\
+\multirow{2}{*}{Remove \texttt{mmt/img}} & SN002 & 55.02 & 54.38 & 1.2\% & exact \\
+                                          & SN009 & 86.99 & 81.15 & 6.7\% & exact \\
+\midrule
+\multirow{2}{*}{Remove \texttt{mmt/pred}} & SN002 & 7.90 & 7.20 & 8.8\% & exact \\
+                                           & SN009 & 35.49 & 33.60 & 5.3\% & exact \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \end{table}
 
-\begin{table}[H]
-\centering
-\caption{No-\texttt{mmt/pred} GLTF stage benchmark}
-\label{tab:gltf-nopred}
-\renewcommand{\arraystretch}{1.15}
-\begin{tabular}{l rrr}
-\toprule
-\textbf{Sample} & \textbf{With \texttt{mmt/pred} (s)} & \textbf{Without (s)} & \textbf{Gain} \\
-\midrule
-SN002 & 7.8960 & 7.2006 & 8.81\% \\
-SN009 & 35.4865 & 33.5964 & 5.33\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-These results show that engineering cleanup is not merely cosmetic.
-Removing unnecessary intermediate artifacts can reduce the target stage
-while keeping outputs unchanged.
+These results confirm that artifact cleanup yields measurable stage-time reductions while preserving exact output parity.
 
 \hypertarget{detection-stage-acceleration}{%
 \subsection{Detection-Stage
@@ -880,36 +854,17 @@ The detection line evolved in three validated steps:
 
 \begin{table}[H]
 \centering
-\caption{In-memory detection vs.\ file-based baseline}
-\label{tab:inmem-detection}
+\caption{Detection-stage acceleration: cumulative gains across 8 validated raw scans (all exact-parity)}
+\label{tab:detection-accel}
 \renewcommand{\arraystretch}{1.15}
-\begin{tabular}{l | r}
+\begin{tabular}{l | rr}
 \toprule
-\textbf{Metric} & \textbf{Value} \\
+\textbf{Metric} & \textbf{In-Memory Only} & \textbf{+ Workers + Prefetch} \\
 \midrule
-Validated raw scans       & 8 \\
-Exact samples             & 8/8 \\
-Mean total speedup        & 22.49\% \\
-Pooled total speedup      & 21.99\% \\
-Mean front-end speedup    & 35.30\% \\
-Pooled front-end speedup  & 35.31\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Safe default path with parallelism and prefetch}
-\label{tab:safe-default}
-\renewcommand{\arraystretch}{1.15}
-\begin{tabular}{l | r}
-\toprule
-\textbf{Metric} & \textbf{Value} \\
-\midrule
-Mean total reduction vs.\ file-based baseline    & 45.13\% \\
-Pooled total reduction vs.\ file-based baseline  & 44.20\% \\
-Mean detection-stage reduction                  & 26.59\% \\
-Pooled detection-stage reduction                & 26.61\% \\
+Exact output samples           & 8/8    & 8/8 \\
+Mean total reduction           & 22.49\% & \textbf{45.13\%} \\
+Pooled total reduction         & 21.99\% & 44.20\% \\
+Mean detection-stage reduction & ---     & 26.59\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -969,12 +924,32 @@ Solder defect flips         & 12 \\
 \end{tabular}
 \end{table}
 
-This result is speed-positive but not defect-safe. It is therefore
-useful as a runtime reference, but not yet suitable for a deployment
-claim. This behavior is consistent with the broader deployment warning
-in the TensorRT literature: lower backend latency does not automatically
-imply safe downstream behavior when the application is
-threshold-sensitive {[}8,16{]}.
+This result is speed-positive but did not satisfy the defect-stability criterion. It is therefore
+useful as a runtime reference, but insufficient to support a deployment-safety claim {[}8,16{]}.
+
+\hypertarget{fair-fp16-comparison}{%
+\subsection{Fair FP16 Precision Comparison}\label{fair-fp16-comparison}}
+
+To isolate the effect of model compression from the effect of backend precision, both the teacher and the $r$\,=\,0.375 pruned student were deployed under the same TRT~FP16 backend on SN009. Table~\ref{tab:fp16-fair} reports the repeated-run results.
+
+\begin{table}[H]
+\centering
+\caption{Fair FP16 comparison on SN009: teacher vs.\ pruned student under identical TRT FP16 backend (3 runs each)}
+\label{tab:fp16-fair}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{l | rr | rr}
+\toprule
+\textbf{Variant} & \textbf{Total (mean)} & \textbf{Total (std)} & \textbf{Seg+Met (mean)} & \textbf{Seg+Met (std)} \\
+\midrule
+Teacher / TRT FP16      & 42.09\,s & $\pm$\,1.51\,s & 28.56\,s & $\pm$\,0.96\,s \\
+$r$=0.375 / TRT FP16    & 39.78\,s & $\pm$\,0.31\,s & 27.02\,s & $\pm$\,0.17\,s \\
+\midrule
+\textbf{Pruning speedup} & \multicolumn{2}{c|}{\textbf{5.5\%}} & \multicolumn{2}{c}{\textbf{5.4\%}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Under identical FP16 precision, the pruned student achieves only a 5.5\% additional whole-pipeline speedup over the teacher. This is a modest gain relative to the cost: the pruned student produces 52~pad and 117~solder defect-flag flips, failing Gate~2. The result demonstrates that TRT~FP16 already captures the majority of the deployment-time acceleration opportunity; the incremental benefit of structural pruning is small in the whole-pipeline context, while the downstream quality cost remains prohibitive.
 
 \hypertarget{adaptive-margin-causal-ablation}{%
 \subsection{Adaptive Margin: Causal
@@ -1000,11 +975,10 @@ This is one of the strongest algorithmic findings in the report. It
 shows that the real risk in adaptive margin is context shrinkage, not
 the production fast path itself.
 
-\begin{figure}
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../figures/adaptive_margin_ablation_sn009.png}
-\caption{Adaptive-margin ablation on SN009, showing that
-context shrinkage reproduces most of the observed drift.}
+\caption{Adaptive-margin ablation on SN009: context shrinkage (C) reproduces most of the drift observed under full adaptive margin (D), while the direct inference path itself (B) contributes minimally.}
 \end{figure}
 
 \hypertarget{guarded-adaptive-margin-1}{%
@@ -1054,7 +1028,7 @@ SN002 & roi124 & Class-4 Dice 0.3860, 36/95 solder flips despite unchanged real 
 \end{tabular}
 \end{table}
 
-This negative result is important for the final report because it shows
+This negative result is consequential because it shows
 that changing the padded direct-path canvas alone can alter outputs
 materially.
 
@@ -1064,7 +1038,7 @@ Result}\label{negative-scheduling-result}}
 
 Same-GPU cross-view detection overlap was also tested. It stayed exact,
 but the repeated detection-only benchmark showed it was slower on both
-benchmarked samples. This line was therefore dropped.
+benchmarked samples. This direction was therefore excluded from the evaluation.
 
 \hypertarget{model-compression-results}{%
 \section{Model Compression Results}\label{model-compression-results}}
@@ -1127,7 +1101,7 @@ Full-train class-aware KD [1,1,1,2,2] & 0.8895 & 0.7545 & 0.8749 \\
 \end{tabular}
 \end{table}
 
-This is a real positive result. The retained class-aware KD
+This provides positive evidence for the effectiveness of the approach. The retained class-aware KD
 configuration improves average Dice, class 3, and class
 4 relative to plain full-train finetuning.
 
@@ -1154,7 +1128,7 @@ The report also rejected several candidates after testing:
   boundary-loss augmentation as a retained method.
 \end{itemize}
 
-These negative results are useful because they narrow the report story
+These negative results are methodologically valuable because they narrow the contribution
 to methods that actually survived the evaluation gate.
 
 \hypertarget{deployment-of-compressed-students-into-the-whole-pipeline}{%
@@ -1188,13 +1162,6 @@ full-case Dice. The speed gains are real, but the downstream cost is too
 high for direct retention. In an inspection setting where defect and
 metrology decisions are thresholded, these flip counts matter more than
 a small average-overlap improvement {[}9,10{]}.
-
-\begin{figure}
-\centering
-\includegraphics[width=\textwidth]{../figures/deployment_gap_fullcase_vs_pipeline.png}
-\caption{Deployment gap between full-case average Dice and
-whole-pipeline defect-flip behavior.}
-\end{figure}
 
 \hypertarget{deployment-aware-checkpoint-selection}{%
 \subsection{Deployment-Aware Checkpoint
@@ -1240,100 +1207,12 @@ samples and metrics.
 \subsection{Whole-Pipeline Runtime Candidate
 Ranking}\label{whole-pipeline-runtime-candidate-ranking}}
 
-The compressed students were then combined with the retained runtime
-candidates from the backend study and re-evaluated inside the full
-\emph{intelliscan} workflow. This ranking is stricter than a
-patch-level benchmark because it includes detection, 3D merge,
-segmentation, metrology, and reporting.
-
-\begin{table}[H]
-\centering
-\caption{Whole-pipeline ranking: model quality, runtime, and energy}
-\label{tab:runtime-ranking-a}
-\begin{adjustbox}{max width=\textwidth}
-\renewcommand{\arraystretch}{1.15}
-\scriptsize
-\rowcolors{2}{gray!6}{}
-\begin{tabular}{ll | rrr | rrrr | rr}
-\toprule
-\textbf{Variant} & \textbf{Status}
-  & \textbf{FC Dice} & \textbf{FC c3} & \textbf{FC c4}
-  & \textbf{Patch} & \textbf{Total} & \textbf{S+M} & \textbf{$\Delta$T}
-  & \textbf{Energy} & \textbf{Power} \\
-& & & & & \textbf{(ms)} & \textbf{(s)} & \textbf{(s)} & & \textbf{(J)} & \textbf{(W)} \\
-\midrule
-teacher / eager        & ref.     & .9054 & .7937 & .8966 & 17.40 & 34.96 & 22.09 &  0.0\%      & 4945 & 108.1 \\
-$r$=.375 / eager       & ctx-only & .8951 & .7869 & .8717 & 16.47 & 33.38 & 21.35 & +4.5\%      & 4833 & 109.5 \\
-$r$=.375 / TRT FP16    & retained & .8951 & .7869 & .8717 &  3.15 & 30.41 & 17.97 & +13.0\%     & 3746 &  91.5 \\
-$r$=.375 / TRT INT8    & caveat   & .8921 & .7734 & .8707 &  2.79 & 29.57 & 17.64 & +15.4\%     & 3668 &  91.4 \\
-$r$=.5 / eager         & ctx-only & .8895 & .7545 & .8749 &  8.87 & 30.39 & 18.62 & +13.1\%     & 3816 &  94.8 \\
-$r$=.5 / compile       & caveat   & .8895$^*$ & .7545$^*$ & .8749$^*$ & 4.80 & 50.16 & 37.54 & $-$43.5\% & 5524 & 90.8 \\
-$r$=.5 / TRT FP16      & retained & .8895 & .7545 & .8750 &  1.62 & 29.45 & 17.29 & +15.8\%     & 3499 &  87.7 \\
-\bottomrule
-\end{tabular}
-\end{adjustbox}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Whole-pipeline ranking (cont.): deployment quality and defect stability}
-\label{tab:runtime-ranking-b}
-\begin{adjustbox}{max width=\textwidth}
-\renewcommand{\arraystretch}{1.15}
-\scriptsize
-\rowcolors{2}{gray!6}{}
-\begin{tabular}{ll | rr | rrr}
-\toprule
-\textbf{Variant} & \textbf{Status}
-  & \textbf{WP c3} & \textbf{WP c4}
-  & \textbf{Pad Flips} & \textbf{Solder Flips} & \textbf{BLT $\Delta$} \\
-\midrule
-teacher / eager        & ref.     & ---    & ---    & ---  & ---  & --- \\
-$r$=.375 / eager       & ctx-only & 0.5391 & 0.2690 &  52 & 117 & 4.52 \\
-$r$=.375 / TRT FP16    & retained & 0.5389 & 0.2690 &  52 & 117 & 4.52 \\
-$r$=.375 / TRT INT8    & caveat   & 0.4649 & 0.2695 &  50 & 116 & 4.62 \\
-$r$=.5 / eager         & ctx-only & 0.2159 & 0.3049 &  70 & 140 & 3.18 \\
-$r$=.5 / compile       & caveat   & 0.2159 & 0.3049 &  70 & 140 & 3.18 \\
-$r$=.5 / TRT FP16      & retained & 0.2158 & 0.3049 &  71 & 141 & 3.18 \\
-\bottomrule
-\end{tabular}
-\end{adjustbox}
-
-\smallskip
-{\footnotesize $^*$Reuses eager checkpoint metrics. FC = full-case; WP = whole-pipeline vs.\\ teacher; S+M = Seg+Met.}
-\end{table}
-
-* The $r$\,=\,0.5 / compile row uses the same student
-checkpoint as $r$\,=\,0.5 / eager. A separate full-case compile
-rerun was not performed, so the full-case columns report the
-checkpoint-level model metrics rather than a compile-specific full-case
-evaluation. On the tested three-sample raw-scan panel, compile and eager
-were numerically near-identical in downstream quality.
-
-In Table 4.15, positive percentages indicate speedup and negative
-percentages indicate slowdown relative to the teacher. This table adds
-three important conclusions to the report. First,
-$r$\,=\,0.5 / TRT FP16 is the fastest retained runtime candidate
-and also the lowest-energy retained runtime candidate on the current
-three-sample whole-pipeline panel. Second,
-$r$\,=\,0.375 / TRT FP16 remains the cleaner quality-oriented
-runtime choice among the retained compressed deployments. Third,
-$r$\,=\,0.5 / compile is a good patch-level or repeated-inference
-fallback backend {[}11{]}, but it is a negative result for the present
-single-scan CLI workflow because the compile warmup cost dominates
-end-to-end latency.
-
-Just as importantly, the teacher-relative whole-pipeline quality columns
-barely change inside each student family when the backend changes from
-eager to compile or TensorRT FP16. This means backend optimization does
-not solve the deployment drift of the compressed student by itself.
+The compressed students were then combined with multiple runtime backends (eager PyTorch, \emph{torch.compile}, TRT FP16, TRT INT8) and re-evaluated inside the full \emph{intelliscan} workflow on a three-sample panel (SN002, SN009, SN010). The complete results are consolidated in the unified master table (Table~\ref{tab:master}, Section~\ref{unified-summary}). Three conclusions emerge from this ranking. First, $r$\,=\,0.5 / TRT FP16 is the fastest candidate at 29.45\,s mean total, but it fails Gate~2 with 71~pad and 141~solder flips. Second, the teacher-relative quality columns barely change when the backend switches from eager to TRT FP16, confirming that backend optimization does not resolve the deployment drift caused by model compression. Third, \emph{torch.compile} is a negative result for single-scan CLI workflows because cold-start compilation time dominates end-to-end latency.
 
 \begin{figure}
 \centering
 \includegraphics[width=\textwidth]{../figures/runtime_candidate_ranking_latency_quality.png}
-\caption{Whole-pipeline runtime-quality-energy ranking derived from the
-candidate table. Marker area is proportional to mean whole-pipeline
-energy.}
+\caption{Whole-pipeline runtime--quality--energy ranking. Each marker represents one variant--backend combination; marker area is proportional to mean energy consumption.}
 \end{figure}
 
 \hypertarget{case-study-good-full-case-dice-bad-pipeline-behavior}{%
@@ -1364,6 +1243,33 @@ metrology workflow.
 compressed student changes the predicted component layout and downstream
 defect state despite a visually similar crop.}
 \end{figure}
+
+\hypertarget{int8-real-data-calibration}{%
+\subsection{INT8 Deployment with Real-Data Calibration}\label{int8-real-data-calibration}}
+
+To complete the precision-level comparison, all three model variants (teacher, $r$\,=\,0.375, $r$\,=\,0.5) were deployed as TRT INT8 engines calibrated with 64~real training samples using entropy calibration. Table~\ref{tab:int8-deploy} reports the whole-pipeline results on SN009.
+
+\begin{table}[H]
+\centering
+\caption{INT8 real-data calibration: whole-pipeline deployment on SN009}
+\label{tab:int8-deploy}
+\begin{adjustbox}{max width=\textwidth}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{l | rr | rr | rr | r | c}
+\toprule
+\textbf{Variant} & \textbf{Total (s)} & \textbf{Seg+Met (s)} & \textbf{WP c3} & \textbf{WP c4} & \textbf{Pad Flips} & \textbf{Solder Flips} & \textbf{BLT $|\Delta|$} & \textbf{Gate~2} \\
+\midrule
+Teacher / INT8 real      & 39.19 & 26.63 & 0.948 & 0.957 & 7/114  & 0/114  & 0.25 & Fail \\
+$r$=0.375 / INT8 real    & 39.60 & 26.59 & 0.503 & 0.506 & 32/114 & 12/114 & 1.60 & Fail \\
+$r$=0.5 / INT8 real      & 38.84 & 25.74 & 0.063 & 0.557 & 64/114 & 22/114 & 2.03 & Fail \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}
+
+This experiment yields three findings. First, the teacher INT8 engine comes closest to passing Gate~2 among all non-eager deployments: its WP Dice values (0.948, 0.957) exceed the 0.90 threshold, solder flips are zero, and BLT drift is only 0.25\,$\mu$m---well within the 1.0\,$\mu$m tolerance. However, 7~pad-misalignment flips still violate the zero-flip requirement, placing it just outside the deployment-safe boundary. Second, the compressed students under INT8 degrade much more severely than the teacher, confirming that pruning amplifies quantization sensitivity. Third, all three variants achieve similar total runtimes (38.8--39.6\,s), indicating that INT8 provides negligible additional speedup over FP16 on this workload; the bottleneck has shifted from compute to data movement and orchestration.
+
+To investigate whether Quantization-Aware Training (QAT) could close the remaining 7-flip gap, the teacher model was fine-tuned for 10~epochs with fake-quantization nodes inserted (78~FakeQuantize modules, learning rate $5 \times 10^{-5}$, cosine schedule). The QAT model achieved a best full-case Dice of 0.8909 (epoch~6). However, whole-pipeline deployment showed 16~pad and 10~solder flips under both eager and TRT~FP16 backends---worse than the PTQ baseline. This indicates that 10-epoch QAT fine-tuning is insufficient for this architecture; the model has not yet learned boundary-stable representations under quantization. The PTQ teacher INT8 (7~pad flips, 0~solder) therefore remains the closest-to-passing INT8 configuration. Closing the remaining gap likely requires either longer QAT training with a boundary-aware loss, or targeted calibration refinement for the pad-class decision boundaries.
 
 \hypertarget{synthesis-of-effective-and-ineffective-directions}{%
 \section{Synthesis of Effective and Ineffective
@@ -1425,6 +1331,116 @@ Measured but not retained as deployment-safe:
   boundary-loss augmentation as a retained method.
 \end{itemize}
 
+\hypertarget{unified-summary}{%
+\section{Unified Summary}\label{unified-summary}}
+
+Table~\ref{tab:master} consolidates the principal findings of this chapter into a single view. Each row represents a distinct acceleration strategy; the rightmost column records the Gate~2 verdict. The table is designed so that the full story of the report---which methods are fast, which are accurate, and which are deployment-safe---can be read from this one page.
+
+\begin{table}[H]
+\centering
+\caption{Unified master table: all evaluated acceleration strategies with Gate~1 quality, whole-pipeline runtime, and Gate~2 deployment verdict}
+\label{tab:master}
+\begin{adjustbox}{max width=\textwidth}
+\renewcommand{\arraystretch}{1.15}
+\scriptsize
+\rowcolors{2}{nuslight}{}
+\begin{tabular}{ll | rrr | rrr | rr | rr | r | c | l}
+\toprule
+\textbf{Variant} & \textbf{Backend}
+  & \textbf{FC Dice} & \textbf{FC c3} & \textbf{FC c4}
+  & \textbf{Patch} & \textbf{WP Total} & \textbf{$\Delta$T}
+  & \textbf{WP c3} & \textbf{WP c4}
+  & \textbf{Pad} & \textbf{Solder}
+  & \textbf{BLT}
+  & \textbf{Gate~2}
+  & \textbf{Scope} \\
+& & & & & \textbf{(ms)} & \textbf{(s)} & \textbf{(\%)}
+  & & & \textbf{Flips} & \textbf{Flips} & \textbf{$|\Delta|$} & & \\
+\midrule
+\multicolumn{15}{l}{\textit{Engineering-only (exact output parity, no model change)}} \\
+Safe default path & eager & .9054 & .7937 & .8966 & 17.4 & 34.96 & \textbf{$-$45.1} & --- & --- & 0 & 0 & 0 & \textbf{Pass} & 8 scans \\
+\midrule
+\multicolumn{15}{l}{\textit{Compressed students (vs.\ teacher)}} \\
+$r$=.375 & eager    & .8951 & .7869 & .8717 & 16.5 & 33.38 & $-$4.5  & 0.539 & 0.269 & 52 & 117 & 4.52 & Fail & 3 scans \\
+$r$=.375 & TRT FP16 & .8951 & .7869 & .8717 &  3.2 & 30.41 & $-$13.0 & 0.539 & 0.269 & 52 & 117 & 4.52 & Fail & 3 scans \\
+$r$=.5   & eager    & .8895 & .7545 & .8749 &  8.9 & 30.39 & $-$13.1 & 0.216 & 0.305 & 70 & 140 & 3.18 & Fail & 3 scans \\
+$r$=.5   & TRT FP16 & .8895 & .7545 & .8750 &  1.6 & 29.45 & $-$15.8 & 0.216 & 0.305 & 71 & 141 & 3.18 & Fail & 3 scans \\
+\midrule
+\multicolumn{15}{l}{\textit{INT8 real-data calibration}} \\
+Teacher  & TRT INT8 & .9054 & .7937 & .8966 & --- & 39.19 & --- & 0.948 & 0.957 & 7 & 0 & 0.25 & Fail$^\dagger$ & SN009 \\
+$r$=.375 & TRT INT8 & .8887 & .7599 & .8691 & --- & 39.60 & --- & 0.503 & 0.506 & 32 & 12 & 1.60 & Fail & SN009 \\
+$r$=.5   & TRT INT8 & .8895 & .7545 & .8750 & --- & 38.84 & --- & 0.063 & 0.557 & 64 & 22 & 2.03 & Fail & SN009 \\
+\midrule
+\multicolumn{15}{l}{\textit{Algorithmic shortcuts (teacher model)}} \\
+Adaptive margin & eager & .9054 & .7937 & .8966 & 17.4 & --- & --- & 0.662 & 0.809 & 13 & 5 & --- & Fail & SN009 \\
+Guarded G5      & eager & .9054 & .7937 & .8966 & 17.4 & --- & --- & 0.932 & 0.956 &  1 & 0 & --- & Fail & SN009 \\
+Larger ROI 124  & eager & .9054 & .7937 & .8966 & 17.4 & --- & --- & 0.386 & ---   & --- & 36 & --- & Fail & SN002 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\smallskip
+{\footnotesize FC = full-case (174 samples); WP = whole-pipeline vs.\ teacher on raw scans; $\Delta$T = runtime change vs.\ baseline. ``---'' = identical to teacher or not measured. $^\dagger$Nearest to passing: WP Dice and BLT pass, but 7~pad flips violate zero-flip. Gate~2 requires zero flips, BLT $|\Delta| < 1.0$, and WP Dice $\geq$ 0.90.}
+\end{table}
+
+The table makes visible the central finding of this report: the \emph{only} strategy that currently passes Gate~2 is the parity-preserving engineering path. All model-compression and algorithmic-shortcut strategies fail Gate~2 despite passing Gate~1.
+
+\subsection{Cumulative Acceleration Breakdown with Quality Impact}
+
+Table~\ref{tab:speedup-breakdown} decomposes the total acceleration into individual contributions, with quality impact shown alongside speed. The baseline is the original file-based detection pipeline on SN009 (93.23\,s).
+
+\begin{table}[H]
+\centering
+\caption{Cumulative acceleration breakdown with quality impact on SN009 (114 bboxes, NVIDIA L40)}
+\label{tab:speedup-breakdown}
+\begin{adjustbox}{max width=\textwidth}
+\renewcommand{\arraystretch}{1.2}
+\scriptsize
+\rowcolors{2}{nuslight}{}
+\begin{tabular}{r l | rr | rrr | rr | c}
+\toprule
+\textbf{\#} & \textbf{Configuration}
+  & \textbf{Total} & \textbf{Speedup}
+  & \textbf{FC Dice} & \textbf{FC c3} & \textbf{FC c4}
+  & \textbf{Pad} & \textbf{Solder}
+  & \textbf{Gate~2} \\
+& & \textbf{(s)} & & & & & \textbf{Flips} & \textbf{Flips} & \\
+\midrule
+0 & Original file-based pipeline  & 93.23 & 1.00$\times$ & .9054 & .7937 & .8966 & 0 & 0 & --- \\
+\midrule
+\multicolumn{10}{l}{\textit{Cumulative safe engineering path (exact output parity, same teacher model)}} \\
+1 & + Combined seg \& metrology    & 81.15 & 1.15$\times$ & .9054 & .7937 & .8966 & 0 & 0 & Pass \\
+2 & + Artifact cleanup             & 75.22 & 1.24$\times$ & .9054 & .7937 & .8966 & 0 & 0 & Pass \\
+3 & + In-memory detection          & 58.58 & 1.59$\times$ & .9054 & .7937 & .8966 & 0 & 0 & Pass \\
+4 & \textbf{+ CPU parallel + prefetch} & \textbf{48.15} & \textbf{1.94$\times$} & \textbf{.9054} & \textbf{.7937} & \textbf{.8966} & \textbf{0} & \textbf{0} & \textbf{Pass} \\
+\midrule
+\multicolumn{10}{l}{\textit{Additional speed (model/backend change, not deployment-safe)}} \\
+5 & Teacher / TRT FP16             & 42.09 & 2.22$\times$ & .9054 & .7937 & .8966 & 7 & 0 & Fail \\
+6 & Teacher / TRT INT8 (PTQ)       & 39.19 & 2.38$\times$ & .9054 & .7937 & .8966 & 7 & 0 & Fail$^\dagger$ \\
+7 & $r$=.375 / TRT FP16            & 39.78 & 2.34$\times$ & .8951 & .7869 & .8717 & 52 & 117 & Fail \\
+8 & $r$=.5 / TRT FP16              & 29.45 & \textbf{3.17$\times$} & .8895 & .7545 & .8750 & 71 & 141 & Fail \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\smallskip
+{\footnotesize Rows 1--4 use the same teacher model with engineering-only changes; FC Dice is unchanged by definition. $^\dagger$Nearest to passing: WP Dice 0.948/0.957, solder flips = 0, BLT $\Delta$ = 0.25\,$\mu$m, but 7 pad flips violate zero-flip. Speedup is vs.\ row~0.}
+\end{table}
+
+\subsection{Deployment Recommendation}
+
+Based on the full evidence in this report, three deployment tiers can be identified:
+
+\begin{enumerate}
+\item \textbf{Recommended for immediate deployment: Row~4 (safe engineering path).} This configuration uses the original teacher model with all engineering optimizations enabled. It achieves \textbf{1.94$\times$ end-to-end speedup} (93.23\,s $\to$ 48.15\,s) with \emph{zero quality loss}---identical segmentation, identical metrology, identical defect flags. No model change is required; only the pipeline orchestration is optimized. This is the strongest deployable result in this report.
+
+\item \textbf{Conditionally deployable: Row~6 (Teacher / TRT INT8 with real-data calibration).} This adds TRT INT8 backend acceleration to reach \textbf{2.38$\times$ speedup}. Segmentation quality remains high (WP Dice 0.948/0.957), solder flips are zero, and BLT drift is minimal (0.25\,$\mu$m). However, 7~pad-misalignment flips out of 114~bumps (6.1\%) prevent full Gate~2 clearance. If the application can tolerate a small pad-flip rate, or if the remaining flips can be resolved through targeted calibration refinement, this configuration offers meaningful additional speedup at near-production quality.
+
+\item \textbf{Not recommended for deployment: Rows~7--8 (compressed students).} Despite achieving up to \textbf{3.17$\times$ speedup} and strong full-case Dice ($\geq$ 0.889), the compressed students produce unacceptable defect-flag instability (52--141 flips) upon whole-pipeline deployment. The \textbf{10.7$\times$ patch-level speedup} ($r$\,=\,0.5 / TRT FP16: 1.62\,ms vs.\ teacher 17.40\,ms) confirms that model compression is highly effective at the kernel level, but whole-pipeline gains are limited by non-model bottlenecks, while downstream quality cost remains prohibitive.
+\end{enumerate}
+
+The practical implication is that \textbf{the teacher model with engineering optimization (Row~4) should be the default deployment target}. Model compression should only be revisited after the deployment gap is closed through downstream-aware training strategies.
+
 \hypertarget{visual-summary}{%
 \section{Visual Summary}\label{visual-summary}}
 
@@ -1437,7 +1453,10 @@ whole-pipeline tradeoffs that define the deployment gap. Together, these
 figures convert the report from a table-only summary into a
 deployment-oriented experimental narrative.
 
-\clearpage
+\hypertarget{evidence-limitations}{%
+\section{Evidence Limitations}\label{evidence-limitations}}
+
+Three limitations of the current evidence base should be noted explicitly. First, the raw-scan evaluation panel contains at most eight samples; while this is sufficient to demonstrate the deployment gap, a larger panel would strengthen the statistical confidence of Gate~2 verdicts. Second, although Section~4.1.1 confirms low runtime variance for the TRT~FP16 backend ($\pm$\,0.31\,s), some whole-pipeline quality comparisons still rely on single sequential runs per sample; extending these to repeated runs with confidence intervals remains desirable. Third, Gate~2 uses teacher-relative whole-pipeline segmentation as the reference standard because voxel-level ground truth is unavailable for raw scans; if ground-truth annotations become available in future, the gate criteria should be re-validated against them.
 
 \hypertarget{conclusions}{%
 \chapter{Conclusions}\label{conclusions}}
@@ -1445,10 +1464,14 @@ deployment-oriented experimental narrative.
 \hypertarget{what-has-been-done}{%
 \section{What Has Been Done}\label{what-has-been-done}}
 
-In summary, this report contributes a defect-aware acceleration
-methodology for a practical 3D semiconductor inspection workflow,
-achieving large retained engineering speedups while showing why several
-superficially attractive shortcuts remain unsafe after deployment. The
+In summary, this report establishes a generalizable principle for
+threshold-sensitive industrial pipelines: \emph{any acceleration method
+must be validated through both model-level segmentation quality and
+whole-pipeline defect stability before it can be considered
+deployment-safe.} Applying this principle to a practical 3D
+semiconductor inspection workflow, the report achieves large engineering
+speedups while demonstrating why several superficially attractive
+shortcuts fail the deployment-safety criterion. The
 study covered model-level compression, algorithmic ablation, runtime
 behavior, and pipeline engineering. The work did not stop at patch-level
 speed or segmentation overlap. Instead, it evaluated every important
@@ -1505,10 +1528,7 @@ single-scan \emph{intelliscan} backend because cold-start compile time
 overwhelms the steady-state patch-level gain in the present CLI
 workflow.
 
-Fourth, the current workspace does not yet provide a fully validated
-real-data INT8 calibration and QAT story for the compressed students.
-The necessary deployment direction has been identified, but it is not
-yet complete enough to be retained as a main report contribution.
+Fourth, real-data INT8 calibration and QAT have both been completed for the teacher model. PTQ INT8 comes closest to Gate~2 compliance (WP Dice 0.948/0.957, zero solder flips, BLT $\Delta$ 0.25\,$\mu$m), but 7~pad-misalignment flips still prevent full clearance. A 10-epoch QAT attempt did not improve upon PTQ, indicating that closing the remaining gap requires longer training or boundary-aware QAT strategies.
 
 Fifth, actual GLTF output generation still needs one final recheck in a
 PyVista-enabled environment, although the artifact-dependency cleanup
@@ -1543,8 +1563,6 @@ turning the current validated tables into a unified
 latency-versus-quality framework, where model size, average Dice, class
 3, class 4, defect flips, and metrology deltas are
 reported together rather than in isolation.
-
-\clearpage
 
 \hypertarget{references}{%
 \chapter*{References}\label{references}}

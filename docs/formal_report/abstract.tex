@@ -1,39 +1,7 @@
-This report studies defect-aware acceleration for a practical 3D
-semiconductor X-ray inspection workflow composed of \emph{wp5-seg} for
-segmentation-model training and compression, and \emph{intelliscan}
-for end-to-end raw-scan inference, metrology, reporting, and deployment.
-The core problem is that patch-level speed or model-level Dice does not
-guarantee safe whole-pipeline behavior. In this application, small
-segmentation changes can trigger large metrology changes and binary
-defect-flag flips.
+Accelerating deep-learning-based 3D semiconductor inspection is commonly evaluated by patch-level latency or segmentation overlap alone. However, when the downstream application applies thresholded metrology---computing bond-line thickness, pad misalignment, and solder extrusion from predicted masks---even small boundary shifts can flip binary defect flags. This creates a \emph{deployment gap}: a model that appears fast and accurate at the segmentation level can still produce unacceptable behavior after integration into the full inspection workflow.
 
-To address this problem, the report adopts a \textbf{Two-Level
-Deployment-Safety Gate}. At Gate 1, methods are screened on the full
-174-case \emph{wp5-seg} evaluation set. At Gate 2, retained
-methods are re-evaluated inside \emph{intelliscan} with emphasis on
-class-sensitive drift, metrology deltas, and defect flips. Using this
-rule, the report identifies both retained positive results and validated
-negative results.
+To address this gap, this report proposes a \textbf{Two-Level Deployment-Safety Gate}. Gate~1 screens candidate accelerations on a 174-case segmentation evaluation set, requiring preservation of class-sensitive Dice. Gate~2 re-evaluates survivors inside the complete \emph{intelliscan} pipeline on raw 3D X-ray scans, requiring zero defect-flag flips, bounded metrology drift, and stable class~3 and class~4 Dice. Only methods that pass both gates are accepted for deployment.
 
-On the engineering side, combined segmentation plus metrology, report
-and GLTF artifact cleanup, exact quantized in-memory detection,
-4-worker CPU image preparation, and intra-view batch prefetch
-were all validated. On the current local eight-sample raw-scan set, the
-final safe default path reduces mean total runtime by 45.13\%
-and pooled total runtime by 44.20\% relative to the older
-file-based detection baseline while preserving exact outputs.
+Applying this methodology yields two main findings. First, a sequence of parity-preserving engineering optimizations---combined in-memory segmentation and metrology, exact quantized in-memory detection, CPU parallelism, and batch prefetch---achieves a 45.13\% mean total runtime reduction across eight validated raw scans with \emph{exact} output parity. Second, structured pruning with class-aware knowledge distillation produces a Pareto front of compressed models; yet even the best student (full-case average Dice 0.8895) fails Gate~2 with large defect-flag flips upon whole-pipeline deployment, revealing a deployment gap that Dice alone cannot detect.
 
-On the model side, structured pruning and class-aware knowledge
-distillation established a first Pareto front. Pruning ratio
-0.375 is the current quality-oriented student, while
-0.5 is the strongest balanced point. However, deployment
-experiments show that even 0.8895 full-case average Dice can
-still cause unacceptable downstream defect flips in the whole pipeline.
-Additional ablations demonstrate that context shrinkage, not the real
-fast path itself, is the dominant cause of adaptive-margin drift, and
-that larger direct padded ROI shells are also unsafe under the current
-model.
-
-The main contribution of the report is therefore a defect-aware
-co-optimization methodology for the full 3D inspection stack, rather
-than a single faster network.
+The principal contribution is therefore not a single faster model, but a reusable evaluation methodology: for threshold-sensitive industrial pipelines, any acceleration must be validated through both model-level quality and whole-pipeline defect stability before it can be considered deployment-safe.

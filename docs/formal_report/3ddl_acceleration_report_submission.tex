@@ -16,6 +16,22 @@
 \usepackage{microtype}
 \usepackage{adjustbox}
 \usepackage[table]{xcolor}
+\usepackage{multirow}
+% Custom algorithm environment (no external package needed)
+\newcounter{algline}
+\newenvironment{pseudocode}[1][]{%
+  \setcounter{algline}{0}%
+  \par\smallskip\noindent\rule{\textwidth}{0.4pt}\\[-6pt]
+  \noindent\textbf{#1}\\[2pt]
+  \begin{tabular}{@{\stepcounter{algline}\scriptsize\thealgline:\hspace{4pt}}l}
+}{%
+  \end{tabular}\\[-2pt]
+  \noindent\rule{\textwidth}{0.4pt}\par\smallskip
+}
+\setlength{\emergencystretch}{2em}
+\definecolor{nuslight}{HTML}{E8EEF4}
+\usepackage{adjustbox}
+\usepackage[table]{xcolor}
 \usepackage{colortbl}
 \usepackage{tikz}
 

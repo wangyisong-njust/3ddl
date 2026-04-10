@@ -212,6 +212,15 @@ binary defect-flag flips matter more than background-dominated voxel
 agreement alone. This evaluation philosophy is one of the key findings
 of the report.
 
+Figure~\ref{fig:system-arch} provides a high-level overview of the entire acceleration framework studied in this report, showing the baseline pipeline, the two acceleration strategies (parity-preserving engineering optimization and model compression), and the Two-Level Deployment-Safety Gate that determines which methods are acceptable for production deployment.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../figures/System Architecture Overview.png}
+\caption{System architecture overview: end-to-end acceleration framework for 3D defect detection, showing the baseline pipeline ($\sim$93\,s), two acceleration strategies (Strategy~A: safe engineering path at $\sim$35\,s; Strategy~B: AI compression at $\sim$29\,s but failing Gate~2), and the deployment-safety gate mechanism.}
+\label{fig:system-arch}
+\end{figure}
+
 \hypertarget{background}{%
 \chapter{Background}\label{background}}
 
